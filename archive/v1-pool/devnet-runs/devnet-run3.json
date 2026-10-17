@@ -1,0 +1,85 @@
+{
+  "ok": {
+    "set_resolver": "3Ug5CSB1aaS6PTRUvLbGvWtQ3zBu42endoSKj8dZUkNYBbrFRKzJjv4qnyssPuwpGvw23Mdv9dG9TMuoMSho3UkE",
+    "fund_resolver_sol": "tJwLpcSvJYhMqk1PZpRrW6gKvXbyJKmYnfZgVkyVHmJfDYiScoxh31Gn3R9gzytNjZhCZGXnQPgmnFBz3UYLCti",
+    "fund_usdc_bettor1": "5MhPSxhmBYdiC7xKhkeXmKG2tK1k7vKh8Q4pS4cYhVp414aucrJERkXmwVstxY82UspCpYuBNvA7H5dL55LjExfa",
+    "fund_usdc_bettor2": "UNRJEPSxnfKdFhtsr2ed5N9Vs2ireyirWhVEbA7wcyxuTd5cK4kVw3uDRDwuJkLL7SSxskZFr2rJbzYURREyRGw",
+    "create_market": "5kNhwXN8R8NNzXfmnakehLzAKtJgPGF7QCXKXVP1qEAdSbDWocHgM8KvCjuKP2S2s28GcAYeFvATiyfr1TC2MTyW",
+    "approve_market_by_admin": "4qssYeM1Lsvdc2GcPfbSeNoH2VsWh1iCbkt3BSFQm8qmJudHfV7RrpdjbEYU15LsBK1AQsbpM46U41nqvzEftiv4",
+    "place_bet": "3Ykzh3VQpTypKyjDR1hitH3uo8FHiAvWR3qRJMpy1nfGXcqGSA7yDyoWV3keknn3LwNLbEd9m7jgwBQk52T8K1de",
+    "resolver_lock": "4pwca8NHzu8h2qUySrnzZPTjQtNhCB9ewHsyhTKJ67pk8pqqyMmDJUSRV7jbUT4o7L4QaYuzCxrQkNBziuaSdwUA",
+    "resolver_unlock": "2PJ5RDVNcN9jvFTcHzQzzSX3bRxSHMbxMznKwadhawsUG3tzQe1NMTr1VudXZGGiMpc5DFx66JZym5QWPodoWiuU",
+    "resolver_lock_again": "4B3tUzarTmeZUbcSKeTiA8SbFYauR5jyLY7uPgLM7Aa7SZju6wmusNSgdkhArV8Bu4JnbyQqHz6hy3XX5hSz1gQg",
+    "resolver_resolve_yes": "2X2WfguuiUUNmzL9FKBBzaWoPJeShoYt1fZutJA7v2D5rXd7SF4efqpKfffpFXeThRhptDYrLbfH8V731QaHWw7p",
+    "claim_winner": "65MvoZdsTSQnhGNYKdUYLZJ3tpW1pabY3gRVHfdysQ7PadhUoDh7WKsUdUPKbhUTWdvs7aicgjg7ci8AwVMGu7aa",
+    "claim_loser": "4ofV2cwdFUg4Ks7ywQdvd4sHJXX4ybXhmynBMerBYeqe3NQzs2UeSbtv3o3RZLZHc3RcmJdyqEnTxEc8AS5HPbxM",
+    "collect_fees": "4cYRGbQqjApMTHuFpTAHosnXn6c1NyUQ5d3HJW5rtYWpMKBsLhf8xEPhaxc3Vjv25fwegr4wSqvXrMgZixPQNiGm"
+  },
+  "mustFail": {
+    "resolver_void": {
+      "sig": "u9EZwdPfaEQiDbEhdRvwu4K3txBXQ4sgtnkJLnfPcSNquJYPEcXbei6BQM393TrArngFEUtM88B9q9iVfWQeWPc",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "resolver_reject": {
+      "sig": "2RnJGpnKLth6MXfTSFn8Er6yKdNFKZJpzRZBrfibXXqdrMtHakiT7bERA7Y4ma16wUvnfut65n2RaH1ovmuqeV1",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "resolver_settle_dispute": {
+      "sig": "3uhSUDnKQcQP8kadnqL6V1M7XtijnCpaJ6H5WGdLCPt4wXQG9USvGozut68kuKCHmnY58GnfMQd7VXS9iGi9mrDp",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "resolver_pause": {
+      "sig": "55X9eMU7D3Wb9usDHjHXZk5rEMvdUmXh8UUGNPcnNGtanWgVggqLeXnbNziu8XZwe1CAZHrbzJ6NX6yJtQCcgfrh",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "resolver_set_limits": {
+      "sig": "3ETr7qHfa1gSTaNMkCo6hvYaJSXF9vhLPYX1GzLZ4iAo6Gvo2C6jAQtqJBq1ebs5YPgh9y8mEHR37zr7yuKqB9To",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "resolver_set_admin": {
+      "sig": "53Y7wD11t8C9X6bqxmimBf4YtVHuFvYknN9t1nSh3izLsHbWDVn65A7KaTqfbYeXWjFxKMbQGQFYi8FSkvULTrdb",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "resolver_set_resolver": {
+      "sig": "8m8MxNFBiS6DjgG8ghrFLZBpsCD3HtDk522PgNV4v2Mwxbtsyxejppffz2bRQTtEBafJEeUeYnKv7PfuUw8NDPi",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "bettor_lock": {
+      "sig": "638X4kP5LBnC47eXV9SiXJEB8UtXqMXx4LmEGq6BA4rRy34wUNwyD6MQKFxkQdk9AbZB4V7f3HtaGSVXiYLimUxy",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "resolver_lock_without_resolver_config": {
+      "sig": "skGRtchnwanAd6AVYtu2JuXVq9uYv5rq9QBFDHn6P4w6qtFWz6ZryoEZkVsd1X358ZguttmyXNbtTCtPAajL8jC",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "resolver_bet_while_locked_by_bettor": {
+      "sig": "3JatKeo7wiqjDFzccdXDoscYUe3Bi7P8kyLRJwP45e4LE2jtfWTfxf9mU85cL6eC5RbotyJ9heYg67BqqhA84aq2",
+      "expected": "BadStatus",
+      "pass": true
+    },
+    "resolver_resolve_no_early": {
+      "sig": "5C2ytuTiKHdZi8aLdubfmNGEqQ7HKgXRVkDGSBjJvsr7phDrZX5uPFAc2btsKR4gbkeXj683hLDXHHqvNG6NbTdr",
+      "expected": "TooEarly",
+      "pass": true
+    },
+    "claim_twice": {
+      "sig": "5zvQgi9Y8QwoYrDZtUxN4SifKR9A8em5vt4bRxHeU9wLPDHtHAxwMS2f1DeiarcwFtPE2gkGea73LvppL7MqB9De",
+      "expected": "AlreadyClaimed",
+      "pass": true
+    }
+  },
+  "market": "9p62fuZB3irFXpDQ26hnusNdjKGEGwEG7dhbnsLYcsHc",
+  "claim_winner_received": "9900000",
+  "claim_loser_received": "0",
+  "fee": "100000",
+  "vaultLeft": "0"
+}

@@ -1,0 +1,13 @@
+target/
+node_modules/
+.anchor/
+test-ledger/
+.keys/
+*.keypair.json
+**/*-keypair.json
+mainnet-state.json
+# Internal drafts, not published
+LOVABLE_*.md
+PHANTOM_REVIEW_REQUEST.md
+archive/v1-pool/LOVABLE_CONTRACT_PROMPT.md
+.DS_Store

@@ -1,0 +1,85 @@
+{
+  "feeVault": "48hB1dDDyipYiy2eRWqj3tVbjjWJXJFK6kiVjkPZeYd4",
+  "signatures": {
+    "create_market": "6bSjUUrRufBh9CKdAPuRTsych5GZGxaCDFRnUC95w5dmd8QQuATczfwR1U9LM2RgCpgg8ySbAMqo53PGdXvTwNA",
+    "approve_market": "zWi8rzpeMeYGzqiWvJRw6e9tfaxkagGzwSdsUi8eRSQ8DUPL3Q9CtFQiJzmvkd2zgeLyMJVkmixkPBsQtfHAesS",
+    "place_bet": "5UvWen1RTP37BPn9GRj4JVTaAreG6ZrqDBccVnUoUGgC3M32jM9BxqgE9D69vFSic2KcjPFYgeu7C8caCdWRCZy8",
+    "lock_market": "5cJo36kFgxApt3A58SKVQc4JByy1dj79eap9tjR8a7ersSiSsKyNxrKFX4zjTNCVCY7hUesedmNMRB4uZa7E1WU4",
+    "unlock_market": "4ga3n5pjcNAdVNynCdLz1wKbn4Mqqmq2Ysdz8B8CfpC8GukgYC1FLce2Eqps4pB3KvWNzXC7vjQA3dHdF7UHGo9G",
+    "lock_market_again": "44h9W5ftXosL9d8979oYcQLMBdJFHuqvQZ9ENqznVCuCmqpZmxuKtWYfuHhswRy9ctsDM4oTukLhs6uqs3eiJQJU",
+    "resolve_market": "a1Qam4zaP7zMS6KUPbrFYCCY2AGz76FFtNfCc29W7FWMYkc2rEp3ERf61GFx356gqdkjYdQPVCLdBeMnHJnf1AY",
+    "set_admin": "2cGcCsGeiC1abTZMNLyusnf8ay8aeKKKygGej8q9UKzE6ssy2CNwP2896gv2yRDy1ruWgGkiWdQngdGju3SpZF9q",
+    "claim_bettor1_winner": "FWKFksrapNhmSBXLGqh1VWLf85UuDyfcuWG8dGu6ZWqdfreqkizLoLJjvhMz5iz2y1u2JTkeS6e9KKX2XKmtchD",
+    "claim_bettor2_loser": "YMf1JtLiqE4EyVTF1VVmh5BHzNDArTi8tPfLuWp9ARSKBnw9E5WTfQ868JRzcEpFz1vomiVAidV5mHdT7G5JiVg",
+    "collect_fees": "5mBoKVGtQiWny4xgqS5FYXhScrGcvs5qZWnJAT91tQGkwxEc7p9zeeswx7C3veYFUtfCnyvY5mHnC5S8STeU5ctU"
+  },
+  "market": "2gPRmMTB6fx2j2svHK2bFRLCYERCQEBDjqbQe6Gqe7XJ",
+  "endTs": 1792205443,
+  "negative": {
+    "bet_other_side": {
+      "sig": "3LpLogbKhUdFggHf42Jtjc8wSnseZ6d4dESrzBdSWpm2eyyR6RogywFmFbzkXp2QT6T2tz4ZHAsCUe6ztA6vbSzR",
+      "expected": "OtherSide",
+      "pass": true
+    },
+    "bet_under_min": {
+      "sig": "2Tiypma7m9FnsbQMsBk1C7dGYv2U3fQVV2ToFq2xoDcoEunwv7JNM4cTavrAru9c98wstoeKcSUirXfCRUo7HFWe",
+      "expected": "BadAmount",
+      "pass": true
+    },
+    "bet_over_max": {
+      "sig": "5bC67frMfTawikjxMfXpYGgWew1PPTj4miG7TPeW7k7uu2LsTkok3Dbg5X9cwWp9kMek7TJBhtGxofzzw2RnQYTT",
+      "expected": "OverMax",
+      "pass": true
+    },
+    "non_admin_resolve": {
+      "sig": "5zZtzVBam16pT51YQQMuixKhdTiZvnmTphzzQBQuNLsoT9P7367pDt9tAw6EMQbHa92oVG2y6v9zwGkjJGfv9de8",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "resolve_no_before_deadline": {
+      "sig": "iABKjkBkZg18BaVNQxJnLPXKrekqbn1nhwwmA6ascBH7qKqRqzEGwYnfFYSyXe5ovyUhwKY5uk2KQePbL8betNC",
+      "expected": "TooEarly",
+      "pass": true
+    },
+    "claim_while_open": {
+      "sig": "3x6tqmy6Pu6vkDXHKu3X5m9L6PfD6PmnhAyCzCUn6KTdfTbasneC8mUK78iLkJRsfW1whnmQZf8qARYZyFjrCcMG",
+      "expected": "NotClaimable",
+      "pass": true
+    },
+    "non_admin_lock": {
+      "sig": "45WT4jjMSxMSaA1nddgpUykeDYcmbj6aTNiz4UtxLfbLH97fruYKfNqJQ75gsGsa6rwJUYRJanorBeR9mZEXEwZo",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "bet_while_locked": {
+      "sig": "5LPBeZVTqbYHjzB6qn8qarnUt5TyMqYUetKg1iooE3Qt6yTRBCTtbspPZJSNTXsBZ9jxCGQsCKJP7aqqkeBJP4KG",
+      "expected": "BadStatus",
+      "pass": true
+    },
+    "non_admin_unlock": {
+      "sig": "25w3SjR9HEm7MjmC8Q6wMcDYXJP8oydgZwoXcYv6idSJU8nR9ys3UiZ6t8aVjfp6zLmGr2CZDfuuiohrJYW2FitU",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "resolve_no_while_locked_before_deadline": {
+      "sig": "4wPeg7L5MqdNsTdGVhz7p8CHwmhJohTTZp49Na1Eg3wne7USAcR6sAa2uqUXLT9h4pdrfHhUiDxFkVsqCJKL3qSP",
+      "expected": "TooEarly",
+      "pass": true
+    },
+    "claim_in_dispute_window": {
+      "sig": "5ZFxJdyRGJgYy5Nd6sM3GkrtbeVVFNahpGug6y1NgwNfscvPATLEtpe4qgJD2MqtfBAFB1mw88skUEJ25SSVScGp",
+      "expected": "NotClaimable",
+      "pass": true
+    },
+    "claim_twice": {
+      "sig": "4Gqbm42x3YSaoWwZkerNcMRAi9LbG7FZCewcbWTZAGAxx8MBr2HqppGtYb2MkkAES5rwJhka8RUuRjrCV5W99Tx5",
+      "expected": "AlreadyClaimed",
+      "pass": true
+    },
+    "collect_fees_twice": {
+      "sig": "4HYet38DMVeVY7aeXSaMZwC9CbWRVvGSt8XzYPMMqRMgUoPV5uPN2b13c5fxeoPKE7mTMYh9Hc2meSW3SGZXH5ya",
+      "expected": "AlreadyClaimed",
+      "pass": true
+    }
+  }
+}

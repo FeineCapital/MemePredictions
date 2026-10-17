@@ -1,0 +1,100 @@
+{
+  "ok": {
+    "initialize": "634mTfMDfvwNh4SwVJrjvtEVGQptXj8JEab2hyKVqiAtjsLy2F3QoGNk9xNh41jv3ezVPEUFqkowaAnhX5FunKLk",
+    "set_resolver": "2CUTZnr2gjjFFY2vPE1PmEW2xvSQWksua3XWFx1WZY2Y1B6q7GmdACxmieDVLCX98mHeDwjvWvv9Uvau7ooCUtte",
+    "set_admin": "fQiC79zEb4xWdZ5UecftwR4MGxDKDAdtvSCUP88J8CPcC53RTK82hW12kdR7Ju1e2bGTXjyVXKTRC6dY9Kbw2t6",
+    "fund_bettor_sol": "1NBTDyHXat9brRQwFMN5xi3E1ZiYZ2ESHqf8iLYKEjF3E9MEzJMthYMPvGJevjx4tRrDp5jG2SqANP876rGaA92",
+    "fund_bettor2_usdc": "XgKuCEP3AaRP4fhBdbLNAK5QQa5M3SXEZU5q6PQAWXF7koGVrboAwTSbCjg9fPBtBYQesbZhZbdcsgvjUtpELtv",
+    "create_market_bettor1_yes_5": "4GDur77UNy5VgqazPdAzmC3Nq1MQk662DNy2j6a7i8LpRRsuWTRGhtVBWegcZtpeErkMPTvthMj7pGto5tuMetM7",
+    "approve_by_admin": "2yB6tpMH93BGg27qN6VzshmNQWNcxftE2iAchEAbJ7QvSQyvnsGAa3nKzdcaTR8UQWNHZWyEAabrtSvKn6f3VbYy",
+    "bettor2_buy_yes_6": "3Y4B7Q6nNt9JHKeTkcyHHYSGz3h2AkjtEgbQKeSq626vVPHZHHRE5q9AJYGV7FpUydpn8gwFmaTgSVy2XeM3eiCZ",
+    "bettor1_cash_out_all_yes": "4ZoCiKxk64nJzDWvrCNjZRjyJNzdwbwAgoyp5U4GY1Dhv8R6ho7MQE2Psqqd8TzAn1RtBbMaf1TKHkDe9qx2E69D",
+    "bettor1_buy_no_5": "Hm93pUiZwAc3BVLKFBJomt7L8PaY8D4GuuCvBW8zzVKLKQ48pPnKRtwpec2vweYAWwwcHfppyWw3vjwi7H7popt",
+    "resolver_lock": "oDHh6nB2BrJ2d7qMZc2pE5rhwE9zBxuHYyZzer1sSvjMcfdg73GR2LWmv5SEPM8DSaa5YiJMHkZjeLFE1UHtmsg",
+    "resolver_resolve_yes_early": "3Y3fXTobgyAQ3hcZrxwzrzJzBqaMiHy4QFENiyzixZ4mUMvVLnZCNmE2beeoxHzW1EFztUF2U4KKVW9nCCxMdS14",
+    "claim_bettor2_yes_winner": "hvtv4UwMzUhqxitRvjCWPgE9igouRDuTnqfvNpm6DAYgDvqFxXFjo6m7SdeLvrJNPxFWKAfMAovJbSVLaq8EXxf",
+    "claim_bettor1_no_loser": "2BdCWzdjWXfYTxk1dZHwPUDujbi2UvqnPheo3KhUJ4mqajfrTyiAgGLzP9VfwiyTiYF7E9uGuzJUU29vBJLfVYSV",
+    "collect_fees": "LbLM9gAYdb76BuNDXEPT5hCLzBrD3SiDFsATrUVoqupz96KNSeGTKEXXp7dGqmGJQBm5N54gJiPfgSnsX9g9mou",
+    "orphan_create_bettor2_yes_5": "2JaDiWAAjLAM97YkaxPGYWUJmCfFGf4TJT6wj3DTv4oBxdDtNBb528casw2tv5qvRrbGTr98DehwGHtLx9gnT5SN",
+    "orphan_approve": "5Gj9ZN1qKdPMxoGyKrx54oNh3inKaoYKDpdADFNai4ritgtLgmYdfwevp3geLAo7sAJoNia8Wt4CBGURtVSQq6rq",
+    "orphan_bettor1_buy_no_5": "d5L4uown8pgKLRkzosRDo2Mnc5habshbu54PZ67FSd13yaQZ18kGyqHqDG8XbCvQxsSbeJX5CpnET3swcD2q3JU",
+    "orphan_bettor1_sells_all_no": "4cEJYc4hpkpXaPGDqeWxtAf5286rV5FHwWvCduFgfKPpJn2yr9G3QKJccVrgBVLN3Zo1DXs9PriuuHxr94f6DxRo",
+    "orphan_admin_void": "4Vq3QsZfrh1Vrq4zsXdcAKefEfRzEGGKADGSEp6zKuCtvwv6xepPvUhSQcmN9Xdh6haWCLFgybPZTiWH1rT5HNDQ",
+    "orphan_claim_bettor2_refund": "5e81KGfBkYKb3wQjKwPRfBV71jAk81yeMETX3KGbaC7Z98yZF8WLhW8JseLgQDzAFfEmm8rFbNRSAyzaRaUxCET2",
+    "orphan_claim_bettor1_nothing": "bMLvNP47aFs9U8G5Ve5sw677Zit3G7XWHiNKAX1W7Ay5X6pqcKfXThXP5RJKJbm2FGA6w4GkJ2296BDK5y87842",
+    "orphan_collect_fees_sweep": "3d5JfpCsUGgfPfV5uUtf1PiV6WLrcDZhQzMoJ7xsyQposgDazEZo8GRqShyDCzHRMtRn1j1KQ2Tkm8qdefddagp2"
+  },
+  "mustFail": {
+    "bettor2_buy_other_side": {
+      "sig": "4bnjexwX3XQa6PagNtCyF7YVntz8EwTgvFA4PwzZjFgksm1bP5S7aKcpmDiaB9qCtKLt26cBWa3tBvNaJg7zKhmM",
+      "expected": "OtherSide",
+      "pass": true
+    },
+    "sell_more_than_held": {
+      "sig": "2Vkzs5gCTXD8aJVZpopZCoJR3uVatr597QkCEXQW7CrKabmXGvko7qSyC3KG94b22NpZCdASbDijt5NRbyuiyV6c",
+      "expected": "NotEnoughShares",
+      "pass": true
+    },
+    "sell_slippage_guard": {
+      "sig": "2gywfrP8YaFNDYCVUYJQFQfUJcs2268u545gZKYiddckxMy9g2YE3dY5YqbirdU8U2W9uca9btJSb4arKNs1sj96",
+      "expected": "Slippage",
+      "pass": true
+    },
+    "buy_under_min": {
+      "sig": "BLpV5gDMaAgVb7jHvoTvC45zrq6RpH28b2yqzuDjdLgj3gDrjrkiUy8zPwtzqkXjoVNvwUD8WY9GHPnefTeyKAm",
+      "expected": "BadAmount",
+      "pass": true
+    },
+    "buy_while_locked": {
+      "sig": "zEGhExGMEctjjSeNbE6WBN3tSEpvNrcxh4aHFonLBjz88qd9M5Tso2cyMwpUPfe9pNYUqXWG5GGpSz2bKXnUzHU",
+      "expected": "BadStatus",
+      "pass": true
+    },
+    "cash_out_while_locked": {
+      "sig": "5kS4g9Cfj4ZDpmpU9bQ7euUotAZT5J63RV7vUMBm6v2T9jt2fTx9xVyo3xLy9YSwkGev3FV6RYvX69T1Z16CMwVf",
+      "expected": "BadStatus",
+      "pass": true
+    },
+    "resolver_resolve_no_early": {
+      "sig": "TG6616UifkQWtXUqz9rNr5cTnzxrAm1Zc9oHnMHnkxS54WWfqKFR81ayWU3mCRShU82HF8m4KiJeYp4EVNMBzGp",
+      "expected": "TooEarly",
+      "pass": true
+    },
+    "resolver_void": {
+      "sig": "2z9ntYFzSfQ6wYdmN6q48dxjAunUyeQagvq3inu8AaUsQoj7PrYkT9ZRRgmSScrKAuUjVV1S2QCBpmBG5V6V7Zb4",
+      "expected": "Unauthorized",
+      "pass": true
+    },
+    "claim_twice": {
+      "sig": "3vDaz1JySKJGd6Fr7vfrFcMytYPSGDpnf4iXeNeZhYe5MSSvbstBbKVjH9W5qXZMDSFS2rGq9TyCAupbpq8tqtdX",
+      "expected": "AlreadyClaimed",
+      "pass": true
+    },
+    "orphan_collect_while_open": {
+      "sig": "46R99NmgRVQjGF4Gp1kSUwsYxD9H51Kr9JRPLybsJ5N5p74yqPFvqwAVTwwxZGZwDGht35zwKgdjzRbbUU7va9Zo",
+      "expected": "BadStatus",
+      "pass": true
+    }
+  },
+  "notes": {
+    "bettor1_paid": "5.000000",
+    "yes_price_before": "0.104880",
+    "yes_price_after": "0.110453",
+    "bettor1_cash_out_received": "5.219279",
+    "bettor1_profit": "0.219279",
+    "pot_yes_reserve": "5.780721",
+    "pot_no_reserve": "5.000000",
+    "claim_bettor2_yes_winner_received": "10.672914",
+    "claim_bettor1_no_loser_received": "0.000000",
+    "fee_to_admin_wallet": "0.107807",
+    "vault_left": "0.000000",
+    "orphan_no_shares_left": "0",
+    "orphan_no_reserve_left_fees": "0.050000",
+    "orphan_claim_bettor2_refund_received": "5.000000",
+    "orphan_claim_bettor1_nothing_received": "0.000000",
+    "orphan_swept_to_admin": "0.050000",
+    "orphan_vault_left": "0.000000"
+  },
+  "market": "4XmkkCp5dNLCdedvGuufRRrPB97BGzAW3Gd4hUTRLVDv",
+  "orphanMarket": "A7XneN691yqvP8QozmCYsbNFP3MhgSHdMyjx9pexDn1n"
+}

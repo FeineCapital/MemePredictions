@@ -1,0 +1,27 @@
+{
+  "name": "mememarkets",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "./scripts/build.sh",
+    "build:test": "./scripts/build.sh test"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "0.31.1",
+    "@solana/spl-token": "0.4.13",
+    "@solana/web3.js": "1.98.4"
+  },
+  "devDependencies": {
+    "@types/chai": "4.3.20",
+    "@types/mocha": "10.0.10",
+    "@types/node": "22.10.0",
+    "chai": "4.5.0",
+    "mocha": "10.8.2",
+    "ts-mocha": "10.0.0",
+    "ts-node": "10.9.2",
+    "typescript": "5.7.3"
+  },
+  "resolutions": {
+    "@solana/web3.js": "1.98.4"
+  }
+}
