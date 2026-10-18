@@ -247,6 +247,24 @@ describe("mememarkets (share trading)", () => {
     return got;
   }
 
+  /** Automatic payout: `caller` pays `owner` into `ownerUsdc` (defaults to the owner's own account). */
+  async function claimFor(caller: Keypair, owner: Keypair, market: PublicKey, ownerUsdc?: PublicKey, position?: PublicKey): Promise<bigint> {
+    const dest = ownerUsdc ?? usdcOf(owner);
+    const before = await bal(dest);
+    await program.methods
+      .claimFor()
+      .accountsPartial({
+        caller: caller.publicKey, owner: owner.publicKey, config: configPda, market, vault: vaultPda(market),
+        position: position ?? positionPda(market, owner.publicKey), ownerUsdc: dest, tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .signers([caller])
+      .rpc();
+    const got = (await bal(dest)) - before;
+    withdrawn += got;
+    await assertSolvent(market);
+    return got;
+  }
+
   async function collectFees(market: PublicKey): Promise<bigint> {
     const before = await bal(feeVault);
     await program.methods
@@ -632,6 +650,62 @@ describe("mememarkets (share trading)", () => {
       await review("rejectMarket", market);
       expect(await collectFees(market)).to.eq(0n);
       await claimAllAndCheck(market, [creator]);
+    });
+  });
+
+  describe("automatic payouts (claim_for)", () => {
+    it("anyone can pay winners and losers into their own wallets, exact amounts, once", async () => {
+      await setLimits(4);
+      const { market, endTs } = await createMarket(creator, YES, 30 * U, 6);
+      await review("approveMarket", market);
+      await buy(alice, market, YES, 20 * U);
+      await buy(bob, market, NO, 40 * U);
+      await expectErr(claimFor(outsider, alice, market), "NotClaimable"); // still open
+      await waitUntil(endTs);
+      await resolve(market, YES);
+      await expectErr(claimFor(outsider, alice, market), "NotClaimable"); // inside the payout delay
+      await waitUntil((await program.account.market.fetch(market)).disputeEnds.toNumber() - 1);
+      const p = await pools(market);
+      const callerBefore = await bal(usdcOf(outsider));
+      for (const h of [creator, alice, bob]) {
+        const pos = (await position(market, h))!;
+        expect(await claimFor(outsider, h, market)).to.eq(payoutFor(pos.shares, pos.side, YES, p), "auto payout amount");
+        assert((await position(market, h))!.claimed);
+      }
+      expect(await bal(usdcOf(outsider))).to.eq(callerBefore, "the caller receives nothing");
+      await expectErr(claimFor(outsider, alice, market), "AlreadyClaimed");
+      await expectErr(claim(alice, market), "AlreadyClaimed"); // no double pay through the manual button
+      await collectFees(market);
+      assert((await bal(vaultPda(market))) < 10n, "only rounding dust left");
+    });
+
+    it("cannot redirect money: wrong destination wallet or someone else's position fails", async () => {
+      const { market, endTs } = await createMarket(creator, YES, 10 * U, 5);
+      await review("approveMarket", market);
+      await buy(alice, market, YES, 10 * U);
+      await waitUntil(endTs);
+      await resolveAndWait(market, YES);
+      // pay alice's winnings into the caller's own USDC account
+      await expectErr(claimFor(outsider, alice, market, usdcOf(outsider)), "ConstraintTokenOwner");
+      // claim alice's position while naming the caller as the owner
+      await expectErr(claimFor(outsider, outsider, market, usdcOf(outsider), positionPda(market, alice.publicKey)), "ConstraintSeeds");
+      // a manual claim and an automatic payout for the other holder still work
+      await claimAllAndCheck(market, [alice]);
+      const pos = (await position(market, creator))!;
+      expect(await claimFor(outsider, creator, market)).to.eq(payoutFor(pos.shares, pos.side, YES, await pools(market)));
+    });
+
+    it("refunds on a voided market go out automatically too", async () => {
+      const { market } = await createMarket(creator, YES, 15 * U, 60);
+      await review("approveMarket", market);
+      await buy(bob, market, NO, 25 * U);
+      await review("voidMarket", market);
+      const p = await pools(market);
+      for (const h of [creator, bob]) {
+        const pos = (await position(market, h))!;
+        expect(await claimFor(outsider, h, market)).to.eq(refundFor(pos.shares, pos.side, p));
+      }
+      expect(await bal(vaultPda(market))).to.eq(0n);
     });
   });
 

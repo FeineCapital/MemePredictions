@@ -390,6 +390,140 @@
       "args": []
     },
     {
+      "name": "claim_for",
+      "docs": [
+        "Automatic payout: anyone (normally the price watcher) can pay a holder's payout or refund",
+        "into that holder's own USDC account. The money can only go to a token account owned by the",
+        "position's owner, so the caller cannot redirect it. Same rules and timing as claim."
+      ],
+      "discriminator": [
+        245,
+        67,
+        97,
+        44,
+        59,
+        223,
+        144,
+        1
+      ],
+      "accounts": [
+        {
+          "name": "caller",
+          "docs": [
+            "Anyone. Pays only the transaction fee; receives nothing."
+          ],
+          "signer": true
+        },
+        {
+          "name": "owner",
+          "docs": [
+            "owner_usdc. Does not sign and receives nothing directly."
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_usdc",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "collect_fees",
       "docs": [
         "Sends the platform fee to the fee vault. Anyone can call it, once per market: on a resolved",

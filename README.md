@@ -9,7 +9,7 @@ Version 2 (share trading). The version 1 pool design is archived in `archive/v1-
 2. Each side (Yes, No) has its own price. Buying a side pushes its price up, selling pushes it down. Early buyers get more shares per USDC.
 3. Anyone can cash out (sell shares back) any time while the market is Open. They get the current value minus a 1% fee that stays in the pot.
 4. When the target is hit, the watcher (resolver key) locks the market, confirms the price, and resolves Yes. If the deadline passes without a hit, it resolves No.
-5. Payouts open after the dispute window (5 minutes by default, max 7 days). The winning side's shares split the whole pot (both sides) minus the 1% platform fee, pro rata by shares. Losing shares get 0.
+5. Payouts open after the dispute window (5 minutes by default, max 7 days). The winning side's shares split the whole pot (both sides) minus the 1% platform fee, pro rata by shares. Losing shares get 0. The watcher then pays every holder automatically (`claim_for`); holders can also press Claim themselves.
 
 ## Instructions
 Users:
@@ -18,6 +18,7 @@ Users:
 - `cancel_pending()`: the creator pulls a Pending market.
 - `dispute_market()`: any holder, during the dispute window. Freezes payouts until the admin settles.
 - `claim()`: payout, or refund on Void or Rejected. Pays the signer's own USDC account only.
+- `claim_for()`: automatic payout. Anyone (normally the price watcher) can send a holder's payout or refund to that holder's own USDC account. The program only accepts a token account owned by the position's owner, so the caller cannot redirect the money. Same timing rules as `claim`, and a position can only be paid once by either path.
 - `collect_fees()`: anyone, once per market. On a Resolved market after the window: the platform fee. On a Void or Rejected market: retained sell fees of any side nobody holds any more (nothing else can reach them).
 - `emergency_void()`: anyone, 14 days after `end_ts` if never resolved, 14 days after a lock that was never resolved, or 14 days after `dispute_ends` if a dispute was never settled. Everyone is refunded.
 
@@ -49,7 +50,7 @@ Admin or resolver:
 ## Status
 - See SECURITY_REVIEW.md for the internal review, fixes and residual risks.
 - Build: `./scripts/build.sh` (platform tools v1.52). Test build: `./scripts/build.sh test`, then `anchor test --skip-build`.
-- 14 unit tests and 25 integration test groups pass on a local validator. Live devnet runs are logged in DEVNET_SMOKE_TEST.md.
+- 14 unit tests and 28 integration test groups pass on a local validator. Live devnet runs are logged in DEVNET_SMOKE_TEST.md.
 - NOT independently audited. Before real money: audit, Squads multisig as admin and upgrade authority, low caps, legal check.
 
 ## PDAs

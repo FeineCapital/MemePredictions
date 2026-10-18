@@ -579,39 +579,16 @@ pub mod mememarkets {
 
     /// Pays a winner, or refunds a stake on a void, rejected or one sided market. Pays the signer's own wallet only.
     pub fn claim(ctx: Context<Claim>) -> Result<()> {
-        let now = Clock::get()?.unix_timestamp;
-        let m = &ctx.accounts.market;
-        let p = &mut ctx.accounts.position;
-        require!(!p.claimed, MmError::AlreadyClaimed);
-        let pools = m.pools();
-        let payout = match m.status {
-            MarketStatus::Void | MarketStatus::Rejected => refund_for(p.shares, p.side, &pools).ok_or(MmError::Math)?,
-            MarketStatus::Resolved => {
-                require!(!m.disputed && now >= m.dispute_ends, MmError::NotClaimable);
-                payout_for(p.shares, p.side, m.result, &pools, m.fee_bps).ok_or(MmError::Math)?
-            }
-            _ => return err!(MmError::NotClaimable),
-        };
-        p.claimed = true;
-        if payout > 0 {
-            let id = m.id.to_le_bytes();
-            let bump = [m.bump];
-            let seeds: &[&[&[u8]]] = &[&[b"market", id.as_ref(), bump.as_ref()]];
-            token::transfer(
-                CpiContext::new_with_signer(
-                    ctx.accounts.token_program.to_account_info(),
-                    Transfer {
-                        from: ctx.accounts.vault.to_account_info(),
-                        to: ctx.accounts.user_usdc.to_account_info(),
-                        authority: ctx.accounts.market.to_account_info(),
-                    },
-                    seeds,
-                ),
-                payout,
-            )?;
-        }
-        emit!(Claimed { market: ctx.accounts.market.key(), user: ctx.accounts.user.key(), amount: payout });
-        Ok(())
+        let a = ctx.accounts;
+        pay_out(&a.market, &mut a.position, &a.vault, &a.user_usdc, &a.token_program)
+    }
+
+    /// Automatic payout: anyone (normally the price watcher) can pay a holder's payout or refund
+    /// into that holder's own USDC account. The money can only go to a token account owned by the
+    /// position's owner, so the caller cannot redirect it. Same rules and timing as claim.
+    pub fn claim_for(ctx: Context<ClaimFor>) -> Result<()> {
+        let a = ctx.accounts;
+        pay_out(&a.market, &mut a.position, &a.vault, &a.owner_usdc, &a.token_program)
     }
 
     /// Sends the platform fee to the fee vault. Anyone can call it, once per market: on a resolved
@@ -675,6 +652,45 @@ fn apply_buy(m: &mut Market, p: &mut Position, side: u8, usdc_in: u64, min_share
         m.no_reserve = m.no_reserve.checked_add(paid).ok_or(MmError::Math)?;
     }
     Ok((shares, paid))
+}
+
+/// Shared by claim and claim_for: works out the payout or refund, marks the position claimed,
+/// and moves the USDC from the vault to `to`, which the caller's context has already proven
+/// belongs to the position's owner.
+fn pay_out<'info>(
+    market: &Account<'info, Market>,
+    position: &mut Account<'info, Position>,
+    vault: &Account<'info, TokenAccount>,
+    to: &Account<'info, TokenAccount>,
+    token_program: &Program<'info, Token>,
+) -> Result<()> {
+    let now = Clock::get()?.unix_timestamp;
+    require!(!position.claimed, MmError::AlreadyClaimed);
+    let pools = market.pools();
+    let payout = match market.status {
+        MarketStatus::Void | MarketStatus::Rejected => refund_for(position.shares, position.side, &pools).ok_or(MmError::Math)?,
+        MarketStatus::Resolved => {
+            require!(!market.disputed && now >= market.dispute_ends, MmError::NotClaimable);
+            payout_for(position.shares, position.side, market.result, &pools, market.fee_bps).ok_or(MmError::Math)?
+        }
+        _ => return err!(MmError::NotClaimable),
+    };
+    position.claimed = true;
+    if payout > 0 {
+        let id = market.id.to_le_bytes();
+        let bump = [market.bump];
+        let seeds: &[&[&[u8]]] = &[&[b"market", id.as_ref(), bump.as_ref()]];
+        token::transfer(
+            CpiContext::new_with_signer(
+                token_program.to_account_info(),
+                Transfer { from: vault.to_account_info(), to: to.to_account_info(), authority: market.to_account_info() },
+                seeds,
+            ),
+            payout,
+        )?;
+    }
+    emit!(Claimed { market: market.key(), user: position.user, amount: payout });
+    Ok(())
 }
 
 fn emit_trade(market: Pubkey, m: &Market, user: Pubkey, side: u8, buy: bool, shares: u64, usdc: u64) {
@@ -970,6 +986,29 @@ pub struct Claim<'info> {
     pub position: Account<'info, Position>,
     #[account(mut, token::mint = config.usdc_mint, token::authority = user)]
     pub user_usdc: Account<'info, TokenAccount>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[derive(Accounts)]
+pub struct ClaimFor<'info> {
+    /// Anyone. Pays only the transaction fee; receives nothing.
+    pub caller: Signer<'info>,
+    /// CHECK: the position owner. Only used to derive the position PDA and to check who owns
+    /// owner_usdc. Does not sign and receives nothing directly.
+    pub owner: UncheckedAccount<'info>,
+    #[account(seeds = [b"config"], bump = config.bump)]
+    pub config: Account<'info, Config>,
+    #[account(seeds = [b"market", market.id.to_le_bytes().as_ref()], bump = market.bump)]
+    pub market: Account<'info, Market>,
+    #[account(mut, seeds = [b"vault", market.key().as_ref()], bump = market.vault_bump)]
+    pub vault: Account<'info, TokenAccount>,
+    #[account(
+        mut, seeds = [b"position", market.key().as_ref(), owner.key().as_ref()], bump = position.bump,
+        constraint = position.user == owner.key() @ MmError::Unauthorized
+    )]
+    pub position: Account<'info, Position>,
+    #[account(mut, token::mint = config.usdc_mint, token::authority = owner)]
+    pub owner_usdc: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
 }
 

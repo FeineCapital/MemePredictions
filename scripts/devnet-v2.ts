@@ -187,6 +187,51 @@ async function main() {
     record("orphan_collect_fees_sweep", await program.methods.collectFees().accountsPartial({ caller: admin.publicKey, config: configPda, market, vault: vaultPda(market), feeVault: c.feeVault, tokenProgram: TOKEN_PROGRAM_ID }).rpc());
     note("orphan_swept_to_admin", fmt((await getAccount(conn, c.feeVault)).amount - fb));
     note("orphan_vault_left", fmt((await getAccount(conn, vaultPda(market))).amount));
+  } else if (step === "auto-setup") {
+    // Winner (admin wallet, Yes) and loser (bettor2, No). A random token mint so the live watcher has no
+    // price data and leaves this market alone; we lock and resolve it with the same resolver key.
+    const c = await program.account.config.fetch(configPda);
+    const market = marketPda(c.marketCount);
+    state.autoMarket = market.toBase58();
+    save();
+    const endTs = (await chainNow()) + 3600 + 120;
+    record("auto_create_admin_yes_5", await program.methods
+      .createMarket(Keypair.generate().publicKey, 0, 0, new BN(1_000_000), 0, new BN(endTs), 1, new BN(5 * U), new BN(0))
+      .accountsPartial({ creator: admin.publicKey, config: configPda, usdcMint: USDC, market, vault: vaultPda(market),
+        position: positionPda(market, admin.publicKey), creatorUsdc: usdcOf(admin.publicKey), tokenProgram: TOKEN_PROGRAM_ID, systemProgram: SystemProgram.programId })
+      .rpc());
+    record("auto_approve", await program.methods.approveMarket().accountsPartial({ admin: admin.publicKey, config: configPda, market }).rpc());
+    record("auto_fund_bettor2_usdc", await transfer(conn, admin, usdcOf(admin.publicKey), usdcOf(bettor2.publicKey), admin, 5 * U));
+    record("auto_bettor2_buy_no_5", await as(bettor2).methods.buyShares(2, new BN(5 * U), new BN(0)).accountsPartial(trade(bettor2, market)).rpc());
+    const r = as(resolver);
+    record("auto_resolver_lock", await r.methods.lockMarket().accountsPartial(ra(resolver, market)).rpc());
+    record("auto_resolver_resolve_yes", await r.methods.resolveMarket(1, new BN(1_000_000)).accountsPartial(ra(resolver, market)).rpc());
+    const m = await program.account.market.fetch(market);
+    state.autoDisputeEnds = m.disputeEnds.toNumber();
+    save();
+    console.log(`payouts open at ${new Date(m.disputeEnds.toNumber() * 1000).toISOString()}`);
+  } else if (step === "auto-pay") {
+    // A third wallet that holds no position (the devnet deployer) sends both payouts.
+    const market = new PublicKey(state.autoMarket);
+    const crank = as(deployer);
+    const acc = (owner: PublicKey, dest?: PublicKey) => ({ caller: deployer.publicKey, owner, config: configPda, market, vault: vaultPda(market),
+      position: positionPda(market, owner), ownerUsdc: dest ?? usdcOf(owner), tokenProgram: TOKEN_PROGRAM_ID });
+    await mustFail("auto_redirect_to_caller_wallet", crank.methods.claimFor().accountsPartial(acc(admin.publicKey, usdcOf(bettor1.publicKey))), [deployer], "ConstraintTokenOwner");
+    const crankBefore = await usdcBal(bettor1.publicKey);
+    for (const [name, owner] of [["auto_pay_winner_admin", admin.publicKey], ["auto_pay_loser_bettor2", bettor2.publicKey]] as const) {
+      const before = await usdcBal(owner);
+      record(name, await crank.methods.claimFor().accountsPartial(acc(owner)).rpc());
+      note(`${name}_received`, fmt((await usdcBal(owner)) - before));
+    }
+    note("auto_unrelated_wallet_change", fmt((await usdcBal(bettor1.publicKey)) - crankBefore));
+    await mustFail("auto_pay_twice", crank.methods.claimFor().accountsPartial(acc(admin.publicKey)), [deployer], "AlreadyClaimed");
+    await mustFail("auto_then_manual_claim", program.methods.claim().accountsPartial({ user: admin.publicKey, config: configPda, market, vault: vaultPda(market),
+      position: positionPda(market, admin.publicKey), userUsdc: usdcOf(admin.publicKey), tokenProgram: TOKEN_PROGRAM_ID }), [admin], "AlreadyClaimed");
+    const fv = (await program.account.config.fetch(configPda)).feeVault;
+    const fb = (await getAccount(conn, fv)).amount;
+    record("auto_collect_fees", await crank.methods.collectFees().accountsPartial({ caller: deployer.publicKey, config: configPda, market, vault: vaultPda(market), feeVault: fv, tokenProgram: TOKEN_PROGRAM_ID }).rpc());
+    note("auto_fee", fmt((await getAccount(conn, fv)).amount - fb));
+    note("auto_vault_left", fmt((await getAccount(conn, vaultPda(market))).amount));
   } else if (step === "status") {
     const m = await program.account.market.fetch(new PublicKey(state.market));
     console.log(JSON.stringify({ status: Object.keys(m.status)[0], endTs: m.endTs.toNumber(), disputeEnds: m.disputeEnds.toNumber(), now: await chainNow() }));

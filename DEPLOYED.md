@@ -23,4 +23,4 @@ Version 2: share trading with cash out. Devnet.
 
 The version 1 pool program (`EaYBtMWdemH7szKjdtiti6iLgRi6HDTdqpsyk7qDwh49`) was closed on devnet on 2026-10-17 after all its markets settled.
 
-Latest upgrade (2026-10-17): orphaned sell fee sweep (SECURITY_REVIEW.md L-4). Production build md5 `92d28ef47fa741fe88dfcbbad987d6fd`, verified byte for byte against the program account.
+Latest upgrade (2026-10-18): automatic payouts (`claim_for`). Production build md5 `e9dc38193ac9a249d613e74f2c4dc862`, verified byte for byte against the program account. On chain IDL: `5e9bfNwLkJBJFH2aSVRUrbCPtfvDrEL7Msy6utnTovfe`.

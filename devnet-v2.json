@@ -22,7 +22,16 @@
     "orphan_admin_void": "4Vq3QsZfrh1Vrq4zsXdcAKefEfRzEGGKADGSEp6zKuCtvwv6xepPvUhSQcmN9Xdh6haWCLFgybPZTiWH1rT5HNDQ",
     "orphan_claim_bettor2_refund": "5e81KGfBkYKb3wQjKwPRfBV71jAk81yeMETX3KGbaC7Z98yZF8WLhW8JseLgQDzAFfEmm8rFbNRSAyzaRaUxCET2",
     "orphan_claim_bettor1_nothing": "bMLvNP47aFs9U8G5Ve5sw677Zit3G7XWHiNKAX1W7Ay5X6pqcKfXThXP5RJKJbm2FGA6w4GkJ2296BDK5y87842",
-    "orphan_collect_fees_sweep": "3d5JfpCsUGgfPfV5uUtf1PiV6WLrcDZhQzMoJ7xsyQposgDazEZo8GRqShyDCzHRMtRn1j1KQ2Tkm8qdefddagp2"
+    "orphan_collect_fees_sweep": "3d5JfpCsUGgfPfV5uUtf1PiV6WLrcDZhQzMoJ7xsyQposgDazEZo8GRqShyDCzHRMtRn1j1KQ2Tkm8qdefddagp2",
+    "auto_create_admin_yes_5": "3eX4fB9ncqjKSSqWgaAwQ2ZrqhBtVoZQBCnVTJkP9sVb7L8CMy3QygChzXpZykzSM4Rj6Ecxh3KrREtc2kiViXtu",
+    "auto_approve": "4PRtJQvd2StV4mhfASfckLmURiQPhj6kTDatYksCBSxfvp42Lz5gUxjZ2DmiEJUSxCP2aH1ENRysExUz5uH3cxau",
+    "auto_fund_bettor2_usdc": "64ia6vxRNYnYUuJamxyD7X4pK41UtEKXEUMyW55U8UMEnUs4AMphg3ppYzxKyuT7AQRsHpu4inQd1SrkjzmLhnoH",
+    "auto_bettor2_buy_no_5": "64AzspbM6ovsNpqEqSL7Wz5Q4t2fZzVBZNHJ97tZKRGpafM6ra3PJ9D5DCtwEGb8wv8FygGqSp36rFPUBWECBxH5",
+    "auto_resolver_lock": "5UEDFi29BGvFCe6AbigqiE2M3nB7C5MupXP9q6sh9i5PDoMPepNCv3y5HetLniQWnjojGeBjpBKkYkqyYDThrGY3",
+    "auto_resolver_resolve_yes": "2dHPuBCkEbvd4Lfq6cVn7RKhZ2sLRqUGzRfJrWnKPe7vM7gEXYisTvGvHFdKkGMPx3GBF5Pin3mNCFkDQhdqGE4q",
+    "auto_pay_winner_admin": "3oGaCGPMGdW7HR1otG2uA34Uj89mDBXBa7rCoP6Fy1qHduST1yuTZjiVukQW4VieNkZvjq4FLYtcQVuuHigwSxVJ",
+    "auto_pay_loser_bettor2": "3zjDJirSBVogE39bGGFzHK3MfHSMnVdRE7uAcGD6zrYDg7vV8u7mxxFkstnVSRxEKcf9gXP3PS7PrNonmC5mRwMb",
+    "auto_collect_fees": "2LC3VYmMSJrPTMr1XYzvmozeWi383Pa4cx8GKL4MdT5doWTcJtD5H1LyoVQBfKY8opLNzqXzYb57DMyBMtuGB5pE"
   },
   "mustFail": {
     "bettor2_buy_other_side": {
@@ -74,6 +83,21 @@
       "sig": "46R99NmgRVQjGF4Gp1kSUwsYxD9H51Kr9JRPLybsJ5N5p74yqPFvqwAVTwwxZGZwDGht35zwKgdjzRbbUU7va9Zo",
       "expected": "BadStatus",
       "pass": true
+    },
+    "auto_redirect_to_caller_wallet": {
+      "sig": "3NYDeeLf9mLXuFTPH5Thidz3XPUyufpH5QFPRNdZoS7mT9QFaYy8LMfT99vcivmVfCc8ER9JcC8DubH9jPysZoNk",
+      "expected": "ConstraintTokenOwner",
+      "pass": true
+    },
+    "auto_pay_twice": {
+      "sig": "9hXQhGBr4uw479TgLQCbLaVnnszvzj5ndQXm5FKr6LpUmbYxtQyuNFzNVLTDwibAnazyTemffe9pj44b2upofpp",
+      "expected": "AlreadyClaimed",
+      "pass": true
+    },
+    "auto_then_manual_claim": {
+      "sig": "RiV9ykdjezc7HQgYiryuzjS6Mtio4488CH8wP9s3psiJkyQuJt5qPUa96M47LkodXCjynAhns5RPVY7xHAqEp6f",
+      "expected": "AlreadyClaimed",
+      "pass": true
     }
   },
   "notes": {
@@ -93,8 +117,15 @@
     "orphan_claim_bettor2_refund_received": "5.000000",
     "orphan_claim_bettor1_nothing_received": "0.000000",
     "orphan_swept_to_admin": "0.050000",
-    "orphan_vault_left": "0.000000"
+    "orphan_vault_left": "0.000000",
+    "auto_pay_winner_admin_received": "9.900000",
+    "auto_pay_loser_bettor2_received": "0.000000",
+    "auto_unrelated_wallet_change": "0.000000",
+    "auto_fee": "0.100000",
+    "auto_vault_left": "0.000000"
   },
   "market": "4XmkkCp5dNLCdedvGuufRRrPB97BGzAW3Gd4hUTRLVDv",
-  "orphanMarket": "A7XneN691yqvP8QozmCYsbNFP3MhgSHdMyjx9pexDn1n"
+  "orphanMarket": "A7XneN691yqvP8QozmCYsbNFP3MhgSHdMyjx9pexDn1n",
+  "autoMarket": "1RsA8a12Yfc5vDzfsUWZpSQ1Kdw4gPfSvGo3LBteUfk",
+  "autoDisputeEnds": 1792290505
 }

@@ -186,3 +186,27 @@ Market `A7XneN691yqvP8QozmCYsbNFP3MhgSHdMyjx9pexDn1n`. Bettor 2 created it with 
 | Must fail | Expected | Result | Signature |
 |---|---|---|---|
 | orphan_collect_while_open | BadStatus | failed as expected | [46R99Nmg...](https://solscan.io/tx/46R99NmgRVQjGF4Gp1kSUwsYxD9H51Kr9JRPLybsJ5N5p74yqPFvqwAVTwwxZGZwDGht35zwKgdjzRbbUU7va9Zo?cluster=devnet) |
+
+# Version 2.2 live run (automatic payouts)
+
+Program upgraded in place to md5 `e9dc38193ac9a249d613e74f2c4dc862` (adds `claim_for`). Upgrade signature [5VUZKzTq...](https://solscan.io/tx/5VUZKzTqzmiCPbe7aQsMXPUoC3vVucU444vSUTB6ZxV56AgCae2y5uazi1o2DUPBRDQ4AsxB2wu9vwo5bG25ca6m?cluster=devnet).
+
+Market `1RsA8a12Yfc5vDzfsUWZpSQ1Kdw4gPfSvGo3LBteUfk`. The admin wallet bought Yes for 5 USDC, bettor 2 bought No for 5 USDC. The resolver key locked and resolved Yes. After the 5 minute window, the devnet deployer wallet (no position in the market) sent both payouts with `claim_for`: the winner received 9.900000 USDC, the loser 0.000000, an unrelated wallet's balance changed by 0.000000. Fee 0.100000 USDC, vault left 0.000000.
+
+| Step | Signature |
+|---|---|
+| auto_create_admin_yes_5 | [3eX4fB9n...](https://solscan.io/tx/3eX4fB9ncqjKSSqWgaAwQ2ZrqhBtVoZQBCnVTJkP9sVb7L8CMy3QygChzXpZykzSM4Rj6Ecxh3KrREtc2kiViXtu?cluster=devnet) |
+| auto_approve | [4PRtJQvd...](https://solscan.io/tx/4PRtJQvd2StV4mhfASfckLmURiQPhj6kTDatYksCBSxfvp42Lz5gUxjZ2DmiEJUSxCP2aH1ENRysExUz5uH3cxau?cluster=devnet) |
+| auto_fund_bettor2_usdc | [64ia6vxR...](https://solscan.io/tx/64ia6vxRNYnYUuJamxyD7X4pK41UtEKXEUMyW55U8UMEnUs4AMphg3ppYzxKyuT7AQRsHpu4inQd1SrkjzmLhnoH?cluster=devnet) |
+| auto_bettor2_buy_no_5 | [64AzspbM...](https://solscan.io/tx/64AzspbM6ovsNpqEqSL7Wz5Q4t2fZzVBZNHJ97tZKRGpafM6ra3PJ9D5DCtwEGb8wv8FygGqSp36rFPUBWECBxH5?cluster=devnet) |
+| auto_resolver_lock | [5UEDFi29...](https://solscan.io/tx/5UEDFi29BGvFCe6AbigqiE2M3nB7C5MupXP9q6sh9i5PDoMPepNCv3y5HetLniQWnjojGeBjpBKkYkqyYDThrGY3?cluster=devnet) |
+| auto_resolver_resolve_yes | [2dHPuBCk...](https://solscan.io/tx/2dHPuBCkEbvd4Lfq6cVn7RKhZ2sLRqUGzRfJrWnKPe7vM7gEXYisTvGvHFdKkGMPx3GBF5Pin3mNCFkDQhdqGE4q?cluster=devnet) |
+| auto_pay_winner_admin | [3oGaCGPM...](https://solscan.io/tx/3oGaCGPMGdW7HR1otG2uA34Uj89mDBXBa7rCoP6Fy1qHduST1yuTZjiVukQW4VieNkZvjq4FLYtcQVuuHigwSxVJ?cluster=devnet) |
+| auto_pay_loser_bettor2 | [3zjDJirS...](https://solscan.io/tx/3zjDJirSBVogE39bGGFzHK3MfHSMnVdRE7uAcGD6zrYDg7vV8u7mxxFkstnVSRxEKcf9gXP3PS7PrNonmC5mRwMb?cluster=devnet) |
+| auto_collect_fees | [2LC3VYmM...](https://solscan.io/tx/2LC3VYmMSJrPTMr1XYzvmozeWi383Pa4cx8GKL4MdT5doWTcJtD5H1LyoVQBfKY8opLNzqXzYb57DMyBMtuGB5pE?cluster=devnet) |
+
+| Must fail | Expected | Result | Signature |
+|---|---|---|---|
+| auto_redirect_to_caller_wallet | ConstraintTokenOwner | failed as expected | [3NYDeeLf...](https://solscan.io/tx/3NYDeeLf9mLXuFTPH5Thidz3XPUyufpH5QFPRNdZoS7mT9QFaYy8LMfT99vcivmVfCc8ER9JcC8DubH9jPysZoNk?cluster=devnet) |
+| auto_pay_twice | AlreadyClaimed | failed as expected | [9hXQhGBr...](https://solscan.io/tx/9hXQhGBr4uw479TgLQCbLaVnnszvzj5ndQXm5FKr6LpUmbYxtQyuNFzNVLTDwibAnazyTemffe9pj44b2upofpp?cluster=devnet) |
+| auto_then_manual_claim | AlreadyClaimed | failed as expected | [RiV9ykdj...](https://solscan.io/tx/RiV9ykdjezc7HQgYiryuzjS6Mtio4488CH8wP9s3psiJkyQuJt5qPUa96M47LkodXCjynAhns5RPVY7xHAqEp6f?cluster=devnet) |
