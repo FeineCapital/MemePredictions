@@ -4,6 +4,22 @@ Anchor program (Solana) for yes or no prediction markets on memecoins, traded as
 
 Version 2 (share trading). The version 1 pool design is archived in `archive/v1-pool/`.
 
+## $PRED token
+MemePredictions' project token, launched on pump.fun on 2026-10-18.
+
+| Field | Value |
+|---|---|
+| Name / ticker | MemePredictions / $PRED |
+| Contract address (mint) | `AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump` |
+| Chain / standard | Solana mainnet, Token-2022 |
+| Supply | 1,000,000,000 (6 decimals) |
+| Mint authority | None (revoked, no more can be minted) |
+| Freeze authority | None (no wallet can be frozen) |
+
+- Creator fees from the token go toward seeding new prediction markets.
+- $PRED is separate from this program. Markets are traded and paid out in USDC only; the program never touches $PRED.
+- Links: [pump.fun](https://pump.fun/coin/AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump), [Solscan](https://solscan.io/token/AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump). Always check the contract address above before buying; anyone can make a token with the same name.
+
 ## How a market works
 1. Anyone proposes a market ("will token X reach a $5M market cap by Friday?") and buys the first shares. The market waits in Pending until the admin approves it.
 2. Each side (Yes, No) has its own price. Buying a side pushes its price up, selling pushes it down. Early buyers get more shares per USDC.

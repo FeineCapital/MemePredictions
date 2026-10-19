@@ -24,3 +24,7 @@ Version 2: share trading with cash out. Devnet.
 The version 1 pool program (`EaYBtMWdemH7szKjdtiti6iLgRi6HDTdqpsyk7qDwh49`) was closed on devnet on 2026-10-17 after all its markets settled.
 
 Latest upgrade (2026-10-18): automatic payouts (`claim_for`). Production build md5 `e9dc38193ac9a249d613e74f2c4dc862`, verified byte for byte against the program account. On chain IDL: `5e9bfNwLkJBJFH2aSVRUrbCPtfvDrEL7Msy6utnTovfe`.
+
+## $PRED token (mainnet)
+- Contract address: `AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump` (Token-2022, 1B supply, mint and freeze authority revoked)
+- Solscan: https://solscan.io/token/AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump
