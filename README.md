@@ -7,7 +7,7 @@ Version 3: 2 or 3 outcomes, open creation switch, Verified badge, creator fee sh
 $PRED is the official MemePredictions platform token. Creator rewards from $PRED are used to seed new memecoin prediction markets and to maintain and grow the platform. Contract address: `AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump`. Details in DEPLOYED.md.
 
 ## How a market works
-1. Anyone creates a market ("will token X reach a $5M market cap by Friday?", or up to 3 outcomes like "which coin hits $10M first: A, B or C?") and buys the first shares. Admin markets go live instantly with a Verified badge. User markets wait for approval unless the admin has turned on open creation.
+1. Anyone creates a market ("will token X reach a $5M market cap by Friday?", or up to 3 outcomes like "which coin hits $10M first: A, B or C?"). The creator's seed is a prize pot split evenly across the outcomes, not a bet, so every market starts at even odds. The creator and the admin can never buy shares, so nobody gets an early position. Admin markets go live instantly with a Verified badge. User markets wait for approval unless the admin has turned on open creation.
 2. Each outcome has its own price. Buying a side pushes its price up, selling pushes it down. Early buyers get more shares per USDC.
 3. Anyone can cash out (sell shares back) any time while the market is Open. They get the current value minus a 1% fee that stays in the pot.
 4. When the target is hit, the watcher (resolver key) locks the market, confirms the price, and resolves Yes. If the deadline passes without a hit, it resolves No.
@@ -15,9 +15,9 @@ $PRED is the official MemePredictions platform token. Creator rewards from $PRED
 
 ## Instructions
 Users:
-- `create_market(token_mint, metric, direction, target, target_decimals, end_ts, outcome_count, side, seed_amount, min_shares_out, rules_hash)`
+- `create_market(token_mint, metric, direction, target, target_decimals, end_ts, outcome_count, seed_amount, rules_hash)`: the seed is a prize pot (no shares). Users seed at least `min_bet`; the admin may seed 0.
 - `buy_shares(side, usdc_in, min_shares_out)` and `sell_shares(shares, min_usdc_out)`: only while Open and before `end_ts`. `min_*` are slippage guards.
-- `cancel_pending()`: the creator pulls a Pending market.
+- `cancel_pending()`: the creator pulls a Pending market and gets the seed back immediately (`reject_market` by the admin does the same).
 - `dispute_market()`: any holder, during the dispute window. Freezes payouts until the admin settles.
 - `claim()`: payout, or refund on Void or Rejected. Pays the signer's own USDC account only.
 - `claim_creator_fee()`: anyone, once per market after `collect_fees`. Pays the creator's fee share to the creator's own USDC account only.

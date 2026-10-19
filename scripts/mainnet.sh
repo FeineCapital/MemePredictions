@@ -15,7 +15,7 @@ PROGRAM_KEYPAIR="target/deploy/mememarkets-keypair.json"
 PROGRAM_ID="BGCcEd1X76oZ2yF9nRoun2gGGLJC3D59Z2XEJNJ6KmhZ"
 SO="target/deploy/mememarkets.so"
 # md5 of the production build that passed all tests and runs on devnet. Not the short-time test build.
-EXPECTED_MD5="784f86c4096d25a7a707a7c4b11ab455"
+EXPECTED_MD5="d9e223a29c3f859d9099ee37d8a9eca4"
 
 DEPLOYER="$(solana-keygen pubkey "$KEY")"
 step="${1:-}"

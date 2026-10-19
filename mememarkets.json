@@ -14,7 +14,7 @@
         "market without taking a side. No shares are minted and no position is created, so the funder",
         "cannot win it back. It is split evenly across the outcome reserves, which means the winners",
         "receive it on resolution (and on a void each outcome's holders get its share back).",
-        "Only while the market is Pending or Open."
+        "Only while the market is Open."
       ],
       "discriminator": [
         36,
@@ -349,7 +349,7 @@
     {
       "name": "cancel_pending",
       "docs": [
-        "The creator can pull a market that nobody approved yet. The seed is refunded through claim."
+        "The creator pulls a market that nobody approved yet. The seed goes straight back to them."
       ],
       "discriminator": [
         74,
@@ -363,12 +363,26 @@
       ],
       "accounts": [
         {
-          "name": "creator",
-          "writable": true,
-          "signer": true,
-          "relations": [
-            "market"
-          ]
+          "name": "signer",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "market",
@@ -393,6 +407,61 @@
               }
             ]
           }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bonus",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  110,
+                  117,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator"
+        },
+        {
+          "name": "creator_usdc",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         }
       ],
       "args": []
@@ -856,10 +925,12 @@
     {
       "name": "create_market",
       "docs": [
-        "Creates a market with 2 or 3 outcomes and buys the creator's first shares.",
+        "Creates a market with 2 or 3 outcomes. The creator's seed is a prize pot, not a bet: it is split",
+        "evenly across the outcomes (like add_bonus), mints no shares and creates no position, so every",
+        "market starts at even odds. Users must seed at least min_bet; the admin may seed 0.",
         "Admin created markets open right away and are Verified. Other markets open right away when",
-        "creation is open, otherwise they wait in Pending for admin approval.",
-        "rules_hash commits to the market's full rules text (sha256), so the wording cannot change later."
+        "creation is open, otherwise they wait in Pending for admin approval (and get the seed back if",
+        "rejected or cancelled). rules_hash is the sha256 of the full rules text, fixed at creation."
       ],
       "discriminator": [
         103,
@@ -946,30 +1017,23 @@
           }
         },
         {
-          "name": "position",
+          "name": "bonus",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  112,
+                  98,
                   111,
-                  115,
-                  105,
-                  116,
-                  105,
-                  111,
-                  110
+                  110,
+                  117,
+                  115
                 ]
               },
               {
                 "kind": "account",
                 "path": "market"
-              },
-              {
-                "kind": "account",
-                "path": "creator"
               }
             ]
           }
@@ -1017,15 +1081,7 @@
           "type": "u8"
         },
         {
-          "name": "side",
-          "type": "u8"
-        },
-        {
           "name": "seed_amount",
-          "type": "u64"
-        },
-        {
-          "name": "min_shares_out",
           "type": "u64"
         },
         {
@@ -1333,7 +1389,7 @@
     {
       "name": "reject_market",
       "docs": [
-        "Rejected markets refund every position (the creator seed) through claim."
+        "Admin rejects a Pending market. The creator's seed goes straight back to the creator."
       ],
       "discriminator": [
         214,
@@ -1347,11 +1403,8 @@
       ],
       "accounts": [
         {
-          "name": "admin",
-          "signer": true,
-          "relations": [
-            "config"
-          ]
+          "name": "signer",
+          "signer": true
         },
         {
           "name": "config",
@@ -1394,6 +1447,61 @@
               }
             ]
           }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bonus",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  110,
+                  117,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator"
+        },
+        {
+          "name": "creator_usdc",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         }
       ],
       "args": []
@@ -2580,6 +2688,11 @@
       "code": 6018,
       "name": "NotEnoughShares",
       "msg": "You do not have that many shares"
+    },
+    {
+      "code": 6019,
+      "name": "CreatorCannotTrade",
+      "msg": "The market creator and the admin cannot trade in this market"
     }
   ],
   "types": [

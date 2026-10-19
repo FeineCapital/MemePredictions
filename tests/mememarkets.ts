@@ -151,25 +151,38 @@ describe("mememarkets v3", () => {
     assert(vault >= owed, `vault ${vault} < owed ${owed}`);
   }
 
-  async function createMarket(who: Keypair, side: number, amount: number, secs: number, outcomes = 2, minShares = 0n, rules = "test market") {
+  /** Creates a market; `seed` is a prize pot split evenly across the outcomes (no shares, no position). */
+  async function createMarket(who: Keypair, seed: number, secs: number, outcomes = 2, rules = "test market") {
     const cfg = await program.account.config.fetch(configPda);
     const market = marketPda(cfg.marketCount);
     const endTs = (await chainNow()) + secs;
     const before = await bal(usdcOf(who));
     await program.methods
-      .createMarket(Keypair.generate().publicKey, 0, 0, new BN(1_000_000), 0, new BN(endTs), outcomes, side, new BN(amount), new BN(minShares.toString()), rulesHash(rules))
+      .createMarket(Keypair.generate().publicKey, 0, 0, new BN(1_000_000), 0, new BN(endTs), outcomes, new BN(seed), rulesHash(rules))
       .accountsPartial({
-        creator: who.publicKey, config: configPda, usdcMint: usdc, market, vault: vaultPda(market),
-        position: positionPda(market, who.publicKey), creatorUsdc: usdcOf(who),
-        tokenProgram: TOKEN_PROGRAM_ID, systemProgram: SystemProgram.programId,
+        creator: who.publicKey, config: configPda, usdcMint: usdc, market, vault: vaultPda(market), bonus: bonusPda(market),
+        creatorUsdc: usdcOf(who), tokenProgram: TOKEN_PROGRAM_ID, systemProgram: SystemProgram.programId,
       })
       .signers([who])
       .rpc();
-    deposited += before - (await bal(usdcOf(who)));
+    const paid = before - (await bal(usdcOf(who)));
+    expect(paid).to.eq(BigInt(seed), "creator pays exactly the seed");
+    deposited += paid;
+    expect(await position(market, who)).to.eq(null, "the seed creates no position");
+    await assertSolvent(market);
     return { market, endTs };
   }
 
-  const review = (ix: "approveMarket" | "rejectMarket" | "voidMarket", market: PublicKey, signer = admin) =>
+  const closeCreation = (ix: "rejectMarket" | "cancelPending", market: PublicKey, signer: Keypair, creatorKp: Keypair, dest?: PublicKey) =>
+    program.methods[ix]()
+      .accountsPartial({
+        signer: signer.publicKey, config: configPda, market, vault: vaultPda(market), bonus: bonusPda(market),
+        creator: creatorKp.publicKey, creatorUsdc: dest ?? usdcOf(creatorKp), tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .signers([signer])
+      .rpc();
+
+  const review = (ix: "approveMarket" | "voidMarket", market: PublicKey, signer = admin) =>
     program.methods[ix]().accountsPartial({ admin: signer.publicKey, config: configPda, market }).signers([signer]).rpc();
   const setVerified = (market: PublicKey, v: boolean, signer = admin) =>
     program.methods.setVerified(v).accountsPartial({ admin: signer.publicKey, config: configPda, market }).signers([signer]).rpc();
@@ -399,61 +412,99 @@ describe("mememarkets v3", () => {
     await program.methods.setAdmin(admin.publicKey).accountsPartial({ admin: carol.publicKey, config: configPda }).signers([carol]).rpc();
   });
 
-  it("create_market: enforces outcomes, side, min, max, deadline, slippage; stores the rules hash", async () => {
-    await expectErr(createMarket(creator, YES, 5 * U - 1, 10), "BadAmount");
-    await expectErr(createMarket(creator, YES, 500 * U + 1, 10), "BadAmount");
-    await expectErr(createMarket(creator, 3, 10 * U, 10), "BadSide"); // outcome 3 in a 2 outcome market
-    await expectErr(createMarket(creator, 4, 10 * U, 10, 3), "BadSide");
-    await expectErr(createMarket(creator, YES, 10 * U, 10, 4), "BadParams");
-    await expectErr(createMarket(creator, YES, 10 * U, 10, 1), "BadParams");
-    await expectErr(createMarket(creator, YES, 10 * U, 1), "BadDeadline");
-    await expectErr(createMarket(creator, YES, 10 * U, 10, 2, 10n ** 15n), "Slippage");
-    const { market } = await createMarket(creator, YES, 10 * U, 60, 2, 0n, "Will $X hit $1M by Friday?");
+  it("create_market: outcomes, seed limits, deadline, rules hash; creation starts closed", async () => {
+    await expectErr(createMarket(creator, 5 * U - 1, 10), "BadAmount"); // users must seed at least min_bet
+    await expectErr(createMarket(creator, 500 * U + 1, 10), "BadAmount");
+    await expectErr(createMarket(creator, 10 * U, 10, 4), "BadParams");
+    await expectErr(createMarket(creator, 10 * U, 10, 1), "BadParams");
+    await expectErr(createMarket(creator, 10 * U, 1), "BadDeadline");
+    const { market } = await createMarket(creator, 10 * U, 60, 2, "Will $X hit $1M by Friday?");
     const m = await program.account.market.fetch(market);
     expect(Buffer.from(m.rulesHash).equals(Buffer.from(rulesHash("Will $X hit $1M by Friday?")))).to.eq(true);
     assert(m.status.pending, "user markets wait for approval while creation is closed");
     expect([m.verified, m.creatorFeeBps]).to.deep.eq([false, 0]);
-    await review("rejectMarket", market);
-    await claimAllAndCheck(market, [creator]);
+    expect((await program.account.marketBonus.fetch(bonusPda(market))).total.toNumber()).to.eq(10 * U);
+  });
+
+  describe("seeding: a prize pot, not a bet", () => {
+    it("the seed is split evenly, so every market starts at even odds, and mints no shares", async () => {
+      const two = await createMarket(admin, 10 * U, 60);
+      const p2 = await pools(two.market);
+      expect([p2.r[0], p2.r[1], p2.s[0], p2.s[1]]).to.deep.eq([5n * BU, 5n * BU, 0n, 0n]);
+      const three = await createMarket(admin, 10 * U, 60, 3);
+      const p3 = await pools(three.market);
+      expect(p3.r).to.deep.eq([3_333_333n, 3_333_333n, 3_333_334n]);
+      expect(p3.s).to.deep.eq([0n, 0n, 0n]);
+      const zero = await createMarket(admin, 0, 60); // the admin may create with no seed
+      expect((await pools(zero.market)).r).to.deep.eq([0n, 0n, 0n]);
+      for (const m of [two.market, three.market, zero.market]) await review("voidMarket", m);
+      expect(await collectFees(three.market)).to.eq(10n * BU); // nobody bought: the unused seed is swept
+    });
+
+    it("the creator and the admin cannot buy shares in a market", async () => {
+      await setCreation(true, 0);
+      const { market } = await createMarket(creator, 10 * U, 60);
+      await expectErr(buy(creator, market, YES, 10 * U), "CreatorCannotTrade");
+      await expectErr(buy(admin, market, NO, 10 * U), "CreatorCannotTrade");
+      await buy(alice, market, YES, 10 * U); // everyone else can
+      const own = await createMarket(admin, 0, 60);
+      await expectErr(buy(admin, own.market, YES, 10 * U), "CreatorCannotTrade");
+      await setCreation(false, 0);
+      await review("voidMarket", market);
+      await review("voidMarket", own.market);
+      await claimAllAndCheck(market, [alice]);
+    });
+
+    it("rejecting or cancelling a pending market refunds the creator's seed in full", async () => {
+      const a = await createMarket(creator, 25 * U, 60);
+      await expectErr(addBonus(outsider, a.market, 5 * U), "BadStatus"); // no bonuses before it opens
+      await expectErr(closeCreation("rejectMarket", a.market, outsider, creator), "Unauthorized");
+      await expectErr(closeCreation("rejectMarket", a.market, admin, creator, usdcOf(outsider)), "ConstraintTokenOwner");
+      const before = await bal(usdcOf(creator));
+      await closeCreation("rejectMarket", a.market, admin, creator);
+      expect((await bal(usdcOf(creator))) - before).to.eq(25n * BU);
+      withdrawn += 25n * BU;
+      assert((await program.account.market.fetch(a.market)).status.rejected);
+      expect(await bal(vaultPda(a.market))).to.eq(0n);
+      await expectErr(review("approveMarket", a.market), "BadStatus");
+
+      const b = await createMarket(creator, 12 * U, 60);
+      await expectErr(closeCreation("cancelPending", b.market, outsider, creator), "Unauthorized");
+      const before2 = await bal(usdcOf(creator));
+      await closeCreation("cancelPending", b.market, creator, creator);
+      expect((await bal(usdcOf(creator))) - before2).to.eq(12n * BU);
+      withdrawn += 12n * BU;
+      await expectErr(closeCreation("cancelPending", b.market, creator, creator), "BadStatus");
+    });
   });
 
   describe("staged rollout: admin markets, open creation, verified badge", () => {
-    it("admin created markets open instantly and are Verified with no creator share", async () => {
-      await setCreation(false, 5_000);
-      const { market } = await createMarket(admin, YES, 10 * U, 60);
-      const m = await program.account.market.fetch(market);
-      assert(m.status.open);
-      expect([m.verified, m.creatorFeeBps]).to.deep.eq([true, 0]);
-      await review("voidMarket", market);
-      await claimAllAndCheck(market, [admin]);
-    });
-
-    it("open creation: user markets go live instantly, unverified, with the creator share; badge is admin only", async () => {
+    it("admin markets open instantly and Verified; open creation lets user markets go live; badge is admin only", async () => {
+      const a = await createMarket(admin, 10 * U, 60);
+      const ma = await program.account.market.fetch(a.market);
+      assert(ma.status.open);
+      expect([ma.verified, ma.creatorFeeBps]).to.deep.eq([true, 0]);
       await setCreation(true, 2_500);
-      const { market } = await createMarket(creator, NO, 10 * U, 60);
-      const m = await program.account.market.fetch(market);
-      assert(m.status.open, "no approval needed");
-      expect([m.verified, m.creatorFeeBps]).to.deep.eq([false, 2_500]);
-      await buy(alice, market, YES, 10 * U);
-      await expectErr(setVerified(market, true, outsider), "Unauthorized");
-      await setVerified(market, true);
-      expect((await program.account.market.fetch(market)).verified).to.eq(true);
-      await setVerified(market, false);
+      const b = await createMarket(creator, 10 * U, 60);
+      const mb = await program.account.market.fetch(b.market);
+      assert(mb.status.open, "no approval needed");
+      expect([mb.verified, mb.creatorFeeBps]).to.deep.eq([false, 2_500]);
+      await expectErr(setVerified(b.market, true, outsider), "Unauthorized");
+      await setVerified(b.market, true);
+      expect((await program.account.market.fetch(b.market)).verified).to.eq(true);
       await setCreation(false, 0);
-      await review("voidMarket", market);
-      await claimAllAndCheck(market, [creator, alice]);
+      await review("voidMarket", a.market);
+      await review("voidMarket", b.market);
     });
   });
-
-  // ───────── trading, two outcomes ─────────
 
   describe("two outcomes: buying, selling, Yes resolution", () => {
     let market: PublicKey;
     let endTs: number;
 
-    it("create with a seed buy, approve, prices rise as people buy", async () => {
+    it("prices rise as people buy; the seed is in the pot from the start", async () => {
       await setLimits(5);
-      ({ market, endTs } = await createMarket(creator, YES, 100 * U, 30));
+      ({ market, endTs } = await createMarket(creator, 20 * U, 30));
       expect((await program.account.market.fetch(market)).disputeSecs.toNumber()).to.eq(5);
       await expectErr(buy(alice, market, YES, 10 * U), "BadStatus");
       await expectErr(review("approveMarket", market, outsider), "Unauthorized");
@@ -501,14 +552,14 @@ describe("mememarkets v3", () => {
       await expectErr(resolve(market, YES, outsider), "Unauthorized");
     });
 
-    it("resolve Yes: no claims in the window, exact payouts after, no double claim, fee once", async () => {
+    it("resolve Yes: no claims in the window, exact payouts after including the seed, fee once", async () => {
       await resolve(market, YES);
-      await expectErr(claim(creator, market), "NotClaimable");
+      await expectErr(claim(alice, market), "NotClaimable");
       await expectErr(collectFees(market), "NotClaimable");
       await waitUntil((await program.account.market.fetch(market)).disputeEnds.toNumber() - 1);
       await expectErr(dispute(bob, market), "DisputeClosed");
       const p = await pools(market);
-      await claimAllAndCheck(market, [creator, alice, bob, carol, dave, erin]);
+      await claimAllAndCheck(market, [alice, bob, carol, dave, erin]);
       await expectErr(claim(bob, market), "AlreadyClaimed");
       expect(await collectFees(market)).to.eq(feeFor(YES, p));
       await expectErr(collectFees(market), "AlreadyClaimed");
@@ -516,87 +567,81 @@ describe("mememarkets v3", () => {
     });
   });
 
-  // ───────── three outcomes ─────────
-
   describe("three outcomes", () => {
-    it("winners of the chosen outcome take both other pools; early result from Locked", async () => {
+    it("winners of the chosen outcome take both other pools and the seed; early result from Locked", async () => {
       await setLimits(3);
-      const { market, endTs } = await createMarket(creator, 1, 30 * U, 3600, 3);
-      await review("approveMarket", market);
-      await buy(alice, market, 2, 50 * U);
-      await buy(bob, market, 3, 20 * U);
-      await buy(carol, market, 3, 10 * U);
-      await expectErr(resolve(market, 3), "TooEarly"); // must lock first
+      const { market, endTs } = await createMarket(admin, 9 * U, 3600, 3);
+      await buy(alice, market, 1, 30 * U);
+      await buy(bob, market, 2, 50 * U);
+      await buy(carol, market, 3, 20 * U);
+      await buy(dave, market, 3, 10 * U);
+      await expectErr(resolve(market, 3), "TooEarly");
       await resolverIx("lockMarket", market);
-      await expectErr(resolve(market, VOID), "TooEarly"); // void only after the deadline
-      await resolve(market, 3); // any outcome can resolve early from Locked in a 3 outcome market
+      await expectErr(resolve(market, VOID), "TooEarly");
+      await resolve(market, 3);
       const m = await program.account.market.fetch(market);
       assert(m.resolvedTs.toNumber() < endTs);
       await waitUntil(m.disputeEnds.toNumber() - 1);
       const p = await pools(market);
-      const t = total(p);
-      const bobGot = await claim(bob, market);
-      const carolGot = await claim(carol, market);
-      expect(bobGot).to.eq(payoutFor((await position(market, bob))!.shares, 3, 3, p));
-      assert(bobGot + carolGot <= t - feeFor(3, p) && bobGot + carolGot >= t - feeFor(3, p) - 2n, "outcome 3 holders take the whole pot");
-      expect(await claim(creator, market)).to.eq(0n);
+      const won = (await claim(carol, market)) + (await claim(dave, market));
+      const pot = total(p) - feeFor(3, p);
+      assert(won <= pot && won >= pot - 2n, "outcome 3 holders take the whole pot including the seed");
       expect(await claim(alice, market)).to.eq(0n);
+      expect(await claim(bob, market)).to.eq(0n);
       expect(await collectFees(market)).to.eq(feeFor(3, p));
     });
 
-    it("nobody on the winning outcome: everyone gets their own outcome's money back, leftovers swept", async () => {
-      const { market, endTs } = await createMarket(creator, 1, 20 * U, 5, 3);
-      await review("approveMarket", market);
-      await buy(alice, market, 3, 15 * U);
-      await addBonus(outsider, market, 9 * U); // 3 USDC to each outcome, including the empty outcome 2
+    it("nobody on the winning outcome: holders get their own outcome's money back, leftovers swept", async () => {
+      const { market, endTs } = await createMarket(admin, 9 * U, 5, 3);
+      await buy(alice, market, 1, 20 * U);
+      await buy(bob, market, 3, 15 * U);
       await waitUntil(endTs);
       await resolveAndWait(market, 2);
       const p = await pools(market);
-      await claimAllAndCheck(market, [creator, alice]);
-      expect(await collectFees(market)).to.eq(p.r[1]); // outcome 2's bonus share
+      await claimAllAndCheck(market, [alice, bob]);
+      expect(await collectFees(market)).to.eq(p.r[1]);
       expect(await bal(vaultPda(market))).to.eq(0n);
     });
 
     it("void refunds each outcome's holders; settle_dispute can pick any outcome", async () => {
-      const a = await createMarket(creator, 1, 10 * U, 60, 3);
-      await review("approveMarket", a.market);
-      await buy(alice, a.market, 2, 10 * U);
-      await buy(bob, a.market, 3, 10 * U);
+      const a = await createMarket(admin, 6 * U, 60, 3);
+      await buy(alice, a.market, 1, 10 * U);
+      await buy(bob, a.market, 2, 10 * U);
+      await buy(carol, a.market, 3, 10 * U);
       await review("voidMarket", a.market);
-      await claimAllAndCheck(a.market, [creator, alice, bob]);
+      await claimAllAndCheck(a.market, [alice, bob, carol]);
 
       await setLimits(20);
-      const b = await createMarket(creator, 1, 10 * U, 5, 3);
+      const b = await createMarket(admin, 0, 5, 3);
       await setLimits(3);
-      await review("approveMarket", b.market);
-      await buy(alice, b.market, 2, 10 * U);
-      await buy(bob, b.market, 3, 10 * U);
+      await buy(alice, b.market, 1, 10 * U);
+      await buy(bob, b.market, 2, 10 * U);
+      await buy(carol, b.market, 3, 10 * U);
       await waitUntil(b.endTs);
       await resolve(b.market, 1);
-      await dispute(bob, b.market);
+      await dispute(carol, b.market);
       await expectErr(settle(b.market, 5), "BadParams");
       await settle(b.market, 3);
-      await claimAllAndCheck(b.market, [creator, alice, bob]);
+      await claimAllAndCheck(b.market, [alice, bob, carol]);
       await collectFees(b.market);
     });
   });
 
-  // ───────── creator fees ─────────
-
   describe("creator fee share", () => {
     it("collect_fees splits the fee; the creator share pays out once, only to the creator", async () => {
-      await setCreation(true, 4_000); // 40 percent of the fee to creators
-      const { market, endTs } = await createMarket(creator, YES, 40 * U, 5);
+      await setCreation(true, 4_000);
+      const { market, endTs } = await createMarket(creator, 10 * U, 5);
       assert((await program.account.market.fetch(market)).status.open);
-      await buy(alice, market, NO, 60 * U);
-      await setCreation(false, 0); // the market keeps the share it was created with
-      await expectErr(claimCreatorFee(market, creator), "NotClaimable"); // before collect_fees
+      await buy(alice, market, YES, 40 * U);
+      await buy(bob, market, NO, 60 * U);
+      await setCreation(false, 0);
+      await expectErr(claimCreatorFee(market, creator), "NotClaimable");
       await waitUntil(endTs);
       await resolveAndWait(market, NO);
       const p = await pools(market);
       const fee = feeFor(NO, p);
       const creatorPart = (fee * 4_000n) / 10_000n;
-      await claimAllAndCheck(market, [creator, alice]);
+      await claimAllAndCheck(market, [alice, bob]);
       expect(await collectFees(market)).to.eq(fee - creatorPart);
       expect((await program.account.market.fetch(market)).creatorFeeOwed.toNumber()).to.eq(Number(creatorPart));
       await assertSolvent(market);
@@ -608,16 +653,14 @@ describe("mememarkets v3", () => {
     });
   });
 
-  // ───────── lock, disputes, refunds ─────────
-
-  describe("lock, unlock, early Yes", () => {
+  describe("lock, disputes, refunds", () => {
     it("lock stops trading, unlock reopens, Yes from Locked before the deadline", async () => {
-      const { market, endTs } = await createMarket(creator, YES, 20 * U, 3600);
-      await review("approveMarket", market);
+      const { market, endTs } = await createMarket(admin, 10 * U, 3600);
+      await buy(alice, market, YES, 20 * U);
       const [bobShares] = await buy(bob, market, NO, 30 * U);
       await expectErr(resolverIx("lockMarket", market, outsider), "Unauthorized");
       await resolverIx("lockMarket", market);
-      await expectErr(buy(alice, market, YES, 10 * U), "BadStatus");
+      await expectErr(buy(carol, market, YES, 10 * U), "BadStatus");
       await expectErr(sell(bob, market, bobShares), "BadStatus");
       await resolverIx("unlockMarket", market);
       await sell(bob, market, bobShares / 3n);
@@ -627,119 +670,97 @@ describe("mememarkets v3", () => {
       const m = await program.account.market.fetch(market);
       assert(m.resolvedTs.toNumber() < endTs);
       await waitUntil(m.disputeEnds.toNumber() - 1);
-      await claimAllAndCheck(market, [creator, bob]);
+      await claimAllAndCheck(market, [alice, bob]);
       await collectFees(market);
     });
 
     it("unlock fails after the deadline; emergency void of a stuck lock", async () => {
-      const a = await createMarket(creator, YES, 10 * U, 4);
-      await review("approveMarket", a.market);
+      const a = await createMarket(admin, 0, 4);
+      await buy(alice, a.market, YES, 10 * U);
       await buy(bob, a.market, NO, 10 * U);
       await resolverIx("lockMarket", a.market);
       await waitUntil(a.endTs);
       await expectErr(resolverIx("unlockMarket", a.market), "DeadlinePassed");
       await resolveAndWait(a.market, NO);
-      await claimAllAndCheck(a.market, [creator, bob]);
+      await claimAllAndCheck(a.market, [alice, bob]);
 
-      const b = await createMarket(creator, YES, 10 * U, 3600);
-      await review("approveMarket", b.market);
+      const b = await createMarket(admin, 0, 3600);
       await buy(bob, b.market, NO, 10 * U);
       await resolverIx("lockMarket", b.market);
       const lockedAt = (await program.account.market.fetch(b.market)).resolvedTs.toNumber();
       await expectErr(emergencyVoid(outsider, b.market), "TooEarly");
       await waitUntil(lockedAt + 6);
       await emergencyVoid(outsider, b.market);
-      await claimAllAndCheck(b.market, [creator, bob]);
+      await claimAllAndCheck(b.market, [bob]);
     });
-  });
 
-  describe("disputes and refunds", () => {
-    it("bettor disputes, claims freeze, admin settles to No", async () => {
+    it("dispute freezes claims, admin settles; emergency void of an unsettled dispute", async () => {
       await setLimits(30);
-      const { market, endTs } = await createMarket(creator, YES, 60 * U, 6);
+      const a = await createMarket(admin, 0, 6);
       await setLimits(3);
-      await review("approveMarket", market);
-      await buy(bob, market, NO, 40 * U);
-      await waitUntil(endTs);
-      await resolve(market, YES);
-      await expectErr(dispute(outsider, market), "AccountNotInitialized");
-      await dispute(bob, market);
-      await expectErr(claim(creator, market), "NotClaimable");
-      await expectErr(settle(market, NO, outsider), "Unauthorized");
-      await settle(market, NO);
-      await claimAllAndCheck(market, [creator, bob]);
-      expect(await collectFees(market)).to.eq(feeFor(NO, await pools(market)));
-    });
-
-    it("emergency void of an unsettled dispute and of an unresolved open market", async () => {
-      const a = await createMarket(creator, YES, 30 * U, 4);
-      await review("approveMarket", a.market);
-      await buy(bob, a.market, NO, 20 * U);
+      await buy(alice, a.market, YES, 60 * U);
+      await buy(bob, a.market, NO, 40 * U);
       await waitUntil(a.endTs);
       await resolve(a.market, YES);
+      await expectErr(dispute(outsider, a.market), "AccountNotInitialized");
       await dispute(bob, a.market);
-      await waitUntil((await program.account.market.fetch(a.market)).disputeEnds.toNumber() + 6);
-      await emergencyVoid(outsider, a.market);
-      await claimAllAndCheck(a.market, [creator, bob]);
+      await expectErr(claim(alice, a.market), "NotClaimable");
+      await expectErr(settle(a.market, NO, outsider), "Unauthorized");
+      await settle(a.market, NO);
+      await claimAllAndCheck(a.market, [alice, bob]);
+      expect(await collectFees(a.market)).to.eq(feeFor(NO, await pools(a.market)));
 
-      const b = await createMarket(creator, YES, 30 * U, 4);
-      await review("approveMarket", b.market);
+      const b = await createMarket(admin, 0, 4);
+      await buy(alice, b.market, YES, 30 * U);
       await buy(bob, b.market, NO, 20 * U);
       await waitUntil(b.endTs);
-      await expectErr(emergencyVoid(outsider, b.market), "TooEarly");
-      await waitUntil(b.endTs + 6);
+      await resolve(b.market, YES);
+      await dispute(bob, b.market);
+      await waitUntil((await program.account.market.fetch(b.market)).disputeEnds.toNumber() + 6);
       await emergencyVoid(outsider, b.market);
-      await claimAllAndCheck(b.market, [creator, bob]);
+      await claimAllAndCheck(b.market, [alice, bob]);
     });
 
-    it("one sided markets, resolve Void, reject, cancel_pending, orphan sweeps", async () => {
-      const a = await createMarket(creator, YES, 20 * U, 4);
-      await review("approveMarket", a.market);
-      await buy(alice, a.market, YES, 30 * U);
+    it("emergency void of an open market; one sided markets; resolve Void; orphan sweeps", async () => {
+      const a = await createMarket(admin, 0, 4);
+      await buy(bob, a.market, NO, 20 * U);
       await waitUntil(a.endTs);
-      await resolveAndWait(a.market, NO); // nobody on No: Yes holders get their own money back
-      await claimAllAndCheck(a.market, [creator, alice]);
-      expect(await collectFees(a.market)).to.eq(0n);
+      await expectErr(emergencyVoid(outsider, a.market), "TooEarly");
+      await waitUntil(a.endTs + 6);
+      await emergencyVoid(outsider, a.market);
+      await claimAllAndCheck(a.market, [bob]);
 
-      const b = await createMarket(creator, NO, 10 * U, 4);
-      await review("approveMarket", b.market);
-      await buy(alice, b.market, YES, 10 * U);
+      const b = await createMarket(admin, 10 * U, 4);
+      await buy(alice, b.market, YES, 30 * U);
       await waitUntil(b.endTs);
-      await resolve(b.market, VOID);
-      await claimAllAndCheck(b.market, [creator, alice]);
+      await resolveAndWait(b.market, NO); // nobody on No: Yes holders get the Yes reserve, No's seed half is swept
+      const pb = await pools(b.market);
+      await claimAllAndCheck(b.market, [alice]);
+      expect(await collectFees(b.market)).to.eq(pb.r[1]);
 
-      const c = await createMarket(creator, YES, 40 * U, 60);
-      await expectErr(review("rejectMarket", c.market, outsider), "Unauthorized");
-      await review("rejectMarket", c.market);
-      await claimAllAndCheck(c.market, [creator]);
+      const c = await createMarket(admin, 0, 4);
+      await buy(alice, c.market, YES, 10 * U);
+      await buy(bob, c.market, NO, 10 * U);
+      await waitUntil(c.endTs);
+      await resolve(c.market, VOID);
+      await claimAllAndCheck(c.market, [alice, bob]);
 
-      const d = await createMarket(creator, NO, 12 * U, 60);
-      await expectErr(
-        program.methods.cancelPending().accountsPartial({ creator: outsider.publicKey, market: d.market }).signers([outsider]).rpc(),
-        "Unauthorized"
-      );
-      await program.methods.cancelPending().accountsPartial({ creator: creator.publicKey, market: d.market }).signers([creator]).rpc();
-      await claimAllAndCheck(d.market, [creator]);
-
-      const e = await createMarket(creator, YES, 20 * U, 60);
-      await review("approveMarket", e.market);
-      const [bobShares] = await buy(bob, e.market, NO, 10 * U);
-      await sell(bob, e.market, bobShares);
-      const pe = await pools(e.market);
-      await review("voidMarket", e.market);
-      expect(await claim(creator, e.market)).to.eq(pe.r[0]);
-      expect(await collectFees(e.market)).to.eq(pe.r[1]); // No's retained sell fee
-      expect(await bal(vaultPda(e.market))).to.eq(0n);
+      const d = await createMarket(admin, 0, 60);
+      const [bobShares] = await buy(bob, d.market, NO, 10 * U);
+      await buy(alice, d.market, YES, 20 * U);
+      await sell(bob, d.market, bobShares);
+      const pd = await pools(d.market);
+      await review("voidMarket", d.market);
+      expect(await claim(alice, d.market)).to.eq(pd.r[0]);
+      expect(await collectFees(d.market)).to.eq(pd.r[1]);
+      expect(await bal(vaultPda(d.market))).to.eq(0n);
     });
   });
 
-  // ───────── automatic payouts and bonus ─────────
-
-  describe("automatic payouts (claim_for)", () => {
+  describe("automatic payouts and bonus", () => {
     it("anyone can pay holders into their own wallets, exact, once; cannot redirect", async () => {
       await setLimits(4);
-      const { market, endTs } = await createMarket(creator, YES, 30 * U, 6);
-      await review("approveMarket", market);
+      const { market, endTs } = await createMarket(admin, 0, 6);
       await buy(alice, market, YES, 20 * U);
       await buy(bob, market, NO, 40 * U);
       await expectErr(claimFor(outsider, alice, market), "NotClaimable");
@@ -751,7 +772,7 @@ describe("mememarkets v3", () => {
       await expectErr(claimFor(outsider, outsider, market, usdcOf(outsider), positionPda(market, alice.publicKey)), "ConstraintSeeds");
       const p = await pools(market);
       const callerBefore = await bal(usdcOf(outsider));
-      for (const h of [creator, alice, bob]) {
+      for (const h of [alice, bob]) {
         const pos = (await position(market, h))!;
         expect(await claimFor(outsider, h, market)).to.eq(payoutFor(pos.shares, pos.side, YES, p));
       }
@@ -760,69 +781,54 @@ describe("mememarkets v3", () => {
       await expectErr(claim(alice, market), "AlreadyClaimed");
       await collectFees(market);
     });
-  });
 
-  describe("bonus pot", () => {
-    it("bonus goes to the winners, the funder gets nothing; not after lock or resolution", async () => {
-      const { market, endTs } = await createMarket(creator, YES, 20 * U, 8);
-      await addBonus(outsider, market, 15 * U); // while Pending
-      await review("approveMarket", market);
-      await addBonus(outsider, market, 15 * U); // while Open
+    it("a bonus goes to the winners, the funder gets nothing; only while Open", async () => {
+      const { market, endTs } = await createMarket(admin, 0, 8);
+      await addBonus(outsider, market, 30 * U);
       await expectErr(addBonus(outsider, market, 0), "BadAmount");
-      expect(await position(market, outsider)).to.eq(null);
-      const [aliceShares, alicePaid] = await buy(alice, market, NO, 10 * U);
+      await buy(alice, market, YES, 20 * U);
+      const [bobShares, bobPaid] = await buy(bob, market, NO, 10 * U);
       await resolverIx("lockMarket", market);
       await expectErr(addBonus(outsider, market, 5 * U), "BadStatus");
       await resolverIx("unlockMarket", market);
       await waitUntil(endTs);
       await resolveAndWait(market, NO);
-      await expectErr(addBonus(outsider, market, 5 * U), "BadStatus");
       const p = await pools(market);
-      const got = await claim(alice, market);
-      expect(got).to.eq(payoutFor(aliceShares, NO, NO, p));
-      assert(got > alicePaid + 20n * BU + 29n * BU, `alice got ${got}`);
-      expect(await claim(creator, market)).to.eq(0n);
-      await expectErr(claim(outsider, market), "AccountNotInitialized");
+      const got = await claim(bob, market);
+      expect(got).to.eq(payoutFor(bobShares, NO, NO, p));
+      assert(got > bobPaid + 20n * BU + 29n * BU, `bob got ${got}`);
+      expect(await claim(alice, market)).to.eq(0n);
       await collectFees(market);
     });
   });
 
-  // ───────── pause, resolver, lopsided ─────────
-
-  describe("pause", () => {
-    it("blocks buying, selling and new markets but not claims", async () => {
-      const { market } = await createMarket(creator, YES, 10 * U, 60);
-      await review("approveMarket", market);
+  describe("pause, resolver, lopsided", () => {
+    it("pause blocks buying, selling and new markets but not claims", async () => {
+      const { market } = await createMarket(admin, 0, 60);
       const [s] = await buy(alice, market, NO, 10 * U);
       await setPaused(true);
       await expectErr(buy(bob, market, NO, 10 * U), "Paused");
       await expectErr(sell(alice, market, s), "Paused");
-      await expectErr(createMarket(creator, YES, 10 * U, 60), "Paused");
+      await expectErr(createMarket(admin, 0, 60), "Paused");
       await review("voidMarket", market);
-      await claimAllAndCheck(market, [alice, creator]);
+      await claimAllAndCheck(market, [alice]);
       await setPaused(false);
     });
-  });
 
-  describe("resolver role", () => {
-    const resolver = Keypair.generate();
-    const setResolver = (key: PublicKey, signer = admin) =>
-      program.methods
-        .setResolver(key)
-        .accountsPartial({ admin: signer.publicKey, config: configPda, resolverConfig: resolverPda, systemProgram: SystemProgram.programId })
-        .signers([signer])
-        .rpc();
-
-    before(async () => {
+    it("resolver can lock, unlock and resolve, cannot do admin actions, can be revoked", async () => {
+      const resolver = Keypair.generate();
       await conn.confirmTransaction(await conn.requestAirdrop(resolver.publicKey, 2 * LAMPORTS_PER_SOL), "confirmed");
-    });
-
-    it("can lock, unlock and resolve, cannot do admin actions, can be revoked", async () => {
+      const setResolver = (key: PublicKey, signer = admin) =>
+        program.methods
+          .setResolver(key)
+          .accountsPartial({ admin: signer.publicKey, config: configPda, resolverConfig: resolverPda, systemProgram: SystemProgram.programId })
+          .signers([signer])
+          .rpc();
       await expectErr(setResolver(resolver.publicKey, outsider), "Unauthorized");
       await setResolver(resolver.publicKey);
-      const { market } = await createMarket(creator, YES, 10 * U, 3600);
-      await review("approveMarket", market);
+      const { market } = await createMarket(admin, 0, 3600);
       await buy(bob, market, NO, 10 * U);
+      await buy(alice, market, YES, 10 * U);
       await resolverIx("lockMarket", market, resolver, true);
       await resolverIx("unlockMarket", market, resolver, true);
       await resolverIx("lockMarket", market, resolver, true);
@@ -839,21 +845,15 @@ describe("mememarkets v3", () => {
       await expectErr(resolve(market, NO, resolver, true), "TooEarly");
       await resolve(market, YES, resolver, true);
       await waitUntil((await program.account.market.fetch(market)).disputeEnds.toNumber() - 1);
-      await claimAllAndCheck(market, [creator, bob]);
-
-      const second = await createMarket(creator, YES, 10 * U, 3600);
-      await review("approveMarket", second.market);
+      await claimAllAndCheck(market, [alice, bob]);
+      const second = await createMarket(admin, 0, 3600);
       await setResolver(PublicKey.default);
       await expectErr(resolverIx("lockMarket", second.market, resolver, true), "Unauthorized");
       await review("voidMarket", second.market);
-      await claimAllAndCheck(second.market, [creator]);
     });
-  });
 
-  describe("lopsided pot", () => {
     it("fee is capped at the losing money", async () => {
-      const { market, endTs } = await createMarket(creator, YES, 500 * U, 8);
-      await review("approveMarket", market);
+      const { market, endTs } = await createMarket(admin, 0, 8);
       await buy(alice, market, YES, 500 * U);
       await buy(bob, market, YES, 490 * U);
       await buy(carol, market, NO, 5 * U);
@@ -863,7 +863,7 @@ describe("mememarkets v3", () => {
       const fee = feeFor(YES, p);
       expect(fee).to.eq(p.r[1]);
       let paid = 0n;
-      for (const h of [creator, alice, bob]) paid += await claim(h, market);
+      for (const h of [alice, bob]) paid += await claim(h, market);
       expect(await claim(carol, market)).to.eq(0n);
       assert(paid >= p.r[0] - 3n);
       expect(await collectFees(market)).to.eq(fee);

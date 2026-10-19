@@ -287,10 +287,12 @@ pub mod mememarkets {
         Ok(())
     }
 
-    /// Creates a market with 2 or 3 outcomes and buys the creator's first shares.
+    /// Creates a market with 2 or 3 outcomes. The creator's seed is a prize pot, not a bet: it is split
+    /// evenly across the outcomes (like add_bonus), mints no shares and creates no position, so every
+    /// market starts at even odds. Users must seed at least min_bet; the admin may seed 0.
     /// Admin created markets open right away and are Verified. Other markets open right away when
-    /// creation is open, otherwise they wait in Pending for admin approval.
-    /// rules_hash commits to the market's full rules text (sha256), so the wording cannot change later.
+    /// creation is open, otherwise they wait in Pending for admin approval (and get the seed back if
+    /// rejected or cancelled). rules_hash is the sha256 of the full rules text, fixed at creation.
     #[allow(clippy::too_many_arguments)]
     pub fn create_market(
         ctx: Context<CreateMarket>,
@@ -301,9 +303,7 @@ pub mod mememarkets {
         target_decimals: u8,
         end_ts: i64,
         outcome_count: u8,
-        side: u8,
         seed_amount: u64,
-        min_shares_out: u64,
         rules_hash: [u8; 32],
     ) -> Result<()> {
         let cfg = &mut ctx.accounts.config;
@@ -313,13 +313,13 @@ pub mod mememarkets {
         require!(direction == DIR_ABOVE || direction == DIR_BELOW, MmError::BadParams);
         require!(target_decimals <= 18, MmError::BadParams);
         require!(outcome_count != 2 || target > 0, MmError::BadParams);
-        require!(side >= 1 && side <= outcome_count, MmError::BadSide);
-        require!(seed_amount >= cfg.min_bet && seed_amount <= cfg.max_bet, MmError::BadAmount);
         let now = Clock::get()?.unix_timestamp;
         require!(end_ts >= now + MIN_DURATION && end_ts <= now + MAX_DURATION, MmError::BadDeadline);
 
         let creator = ctx.accounts.creator.key();
         let by_admin = creator == cfg.admin;
+        require!(seed_amount <= cfg.max_bet, MmError::BadAmount);
+        require!(by_admin || seed_amount >= cfg.min_bet, MmError::BadAmount);
         let m = &mut ctx.accounts.market;
         m.id = cfg.market_count;
         m.creator = creator;
@@ -333,7 +333,7 @@ pub mod mememarkets {
         m.status = if by_admin || cfg.open_creation { MarketStatus::Open } else { MarketStatus::Pending };
         m.result = 0;
         m.outcome_count = outcome_count;
-        m.reserves = [0; MAX_OUTCOMES];
+        m.reserves = split_evenly(seed_amount, outcome_count)?;
         m.shares = [0; MAX_OUTCOMES];
         m.curve_base = cfg.curve_base;
         m.curve_depth = cfg.curve_depth;
@@ -353,27 +353,24 @@ pub mod mememarkets {
         m.vault_bump = ctx.bumps.vault;
         cfg.market_count = cfg.market_count.checked_add(1).ok_or(MmError::Math)?;
 
-        let p = &mut ctx.accounts.position;
-        p.market = m.key();
-        p.user = creator;
-        p.side = side;
-        p.shares = 0;
-        p.cost = 0;
-        p.claimed = false;
-        p.bump = ctx.bumps.position;
-        let (shares, paid) = apply_buy(m, p, side, seed_amount, min_shares_out, cfg.max_bet)?;
+        let b = &mut ctx.accounts.bonus;
+        b.market = m.key();
+        b.total = seed_amount;
+        b.bump = ctx.bumps.bonus;
 
-        token::transfer(
-            CpiContext::new(
-                ctx.accounts.token_program.to_account_info(),
-                Transfer {
-                    from: ctx.accounts.creator_usdc.to_account_info(),
-                    to: ctx.accounts.vault.to_account_info(),
-                    authority: ctx.accounts.creator.to_account_info(),
-                },
-            ),
-            paid,
-        )?;
+        if seed_amount > 0 {
+            token::transfer(
+                CpiContext::new(
+                    ctx.accounts.token_program.to_account_info(),
+                    Transfer {
+                        from: ctx.accounts.creator_usdc.to_account_info(),
+                        to: ctx.accounts.vault.to_account_info(),
+                        authority: ctx.accounts.creator.to_account_info(),
+                    },
+                ),
+                seed_amount,
+            )?;
+        }
         emit!(MarketCreated {
             market: m.key(),
             id: m.id,
@@ -385,7 +382,7 @@ pub mod mememarkets {
             pending: m.status == MarketStatus::Pending,
             rules_hash,
         });
-        emit_trade(m.key(), m, p.user, side, true, shares, paid);
+        emit!(BonusAdded { market: m.key(), funder: creator, amount: seed_amount, total_bonus: seed_amount });
         Ok(())
     }
 
@@ -397,12 +394,10 @@ pub mod mememarkets {
         Ok(())
     }
 
-    /// Rejected markets refund every position (the creator seed) through claim.
-    pub fn reject_market(ctx: Context<ReviewMarket>) -> Result<()> {
-        let m = &mut ctx.accounts.market;
-        require!(m.status == MarketStatus::Pending, MmError::BadStatus);
-        m.status = MarketStatus::Rejected;
-        Ok(())
+    /// Admin rejects a Pending market. The creator's seed goes straight back to the creator.
+    pub fn reject_market(ctx: Context<CloseCreation>) -> Result<()> {
+        require!(ctx.accounts.config.admin == ctx.accounts.signer.key(), MmError::Unauthorized);
+        refund_seed(ctx.accounts)
     }
 
     /// Admin marks a market as Verified (official, promoted) or removes the badge. Display only.
@@ -435,12 +430,10 @@ pub mod mememarkets {
         Ok(())
     }
 
-    /// The creator can pull a market that nobody approved yet. The seed is refunded through claim.
-    pub fn cancel_pending(ctx: Context<CancelPending>) -> Result<()> {
-        let m = &mut ctx.accounts.market;
-        require!(m.status == MarketStatus::Pending, MmError::BadStatus);
-        m.status = MarketStatus::Rejected;
-        Ok(())
+    /// The creator pulls a market that nobody approved yet. The seed goes straight back to them.
+    pub fn cancel_pending(ctx: Context<CloseCreation>) -> Result<()> {
+        require!(ctx.accounts.market.creator == ctx.accounts.signer.key(), MmError::Unauthorized);
+        refund_seed(ctx.accounts)
     }
 
     /// Buy shares of one outcome with `usdc_in` USDC at the curve price. Reverts if fewer than
@@ -450,6 +443,8 @@ pub mod mememarkets {
         require!(!cfg.paused, MmError::Paused);
         require!(usdc_in >= cfg.min_bet, MmError::BadAmount);
         let m = &mut ctx.accounts.market;
+        let user = ctx.accounts.user.key();
+        require!(user != m.creator && user != cfg.admin, MmError::CreatorCannotTrade);
         require!(side >= 1 && side <= m.outcome_count, MmError::BadSide);
         require!(m.status == MarketStatus::Open, MmError::BadStatus);
         require!(Clock::get()?.unix_timestamp < m.end_ts, MmError::BettingClosed);
@@ -536,16 +531,14 @@ pub mod mememarkets {
     /// market without taking a side. No shares are minted and no position is created, so the funder
     /// cannot win it back. It is split evenly across the outcome reserves, which means the winners
     /// receive it on resolution (and on a void each outcome's holders get its share back).
-    /// Only while the market is Pending or Open.
+    /// Only while the market is Open.
     pub fn add_bonus(ctx: Context<AddBonus>, amount: u64) -> Result<()> {
         require!(amount > 0, MmError::BadAmount);
         let m = &mut ctx.accounts.market;
-        require!(m.status == MarketStatus::Pending || m.status == MarketStatus::Open, MmError::BadStatus);
-        let n = m.outcome_count as usize;
-        let part = amount / n as u64;
-        for i in 0..n {
-            let add = if i == n - 1 { amount - part * (n as u64 - 1) } else { part };
-            m.reserves[i] = m.reserves[i].checked_add(add).ok_or(MmError::Math)?;
+        require!(m.status == MarketStatus::Open, MmError::BadStatus);
+        let add = split_evenly(amount, m.outcome_count)?;
+        for i in 0..m.outcome_count as usize {
+            m.reserves[i] = m.reserves[i].checked_add(add[i]).ok_or(MmError::Math)?;
         }
         let b = &mut ctx.accounts.bonus;
         if b.market == Pubkey::default() {
@@ -738,7 +731,44 @@ pub mod mememarkets {
     }
 }
 
-/// Shared by create_market and buy_shares: prices the buy, updates market and position, returns
+/// Splits `amount` evenly over the first `n` outcomes; the last outcome takes the remainder.
+fn split_evenly(amount: u64, n: u8) -> Result<[u64; MAX_OUTCOMES]> {
+    let n = n as usize;
+    let part = amount / n as u64;
+    let mut out = [0u64; MAX_OUTCOMES];
+    for (i, slot) in out.iter_mut().enumerate().take(n) {
+        *slot = if i == n - 1 { amount.checked_sub(part * (n as u64 - 1)).ok_or(MmError::Math)? } else { part };
+    }
+    Ok(out)
+}
+
+/// Shared by reject_market and cancel_pending: a Pending market only ever holds the creator's seed
+/// (no trades or bonuses are possible before it opens), so the whole vault goes back to the creator.
+fn refund_seed(a: &mut CloseCreation) -> Result<()> {
+    let m = &mut a.market;
+    require!(m.status == MarketStatus::Pending, MmError::BadStatus);
+    let amount = a.vault.amount;
+    m.status = MarketStatus::Rejected;
+    m.reserves = [0; MAX_OUTCOMES];
+    a.bonus.total = 0;
+    if amount > 0 {
+        let id = m.id.to_le_bytes();
+        let bump = [m.bump];
+        let seeds: &[&[&[u8]]] = &[&[b"market", id.as_ref(), bump.as_ref()]];
+        token::transfer(
+            CpiContext::new_with_signer(
+                a.token_program.to_account_info(),
+                Transfer { from: a.vault.to_account_info(), to: a.creator_usdc.to_account_info(), authority: m.to_account_info() },
+                seeds,
+            ),
+            amount,
+        )?;
+    }
+    emit!(MarketResolved { market: m.key(), result: RESULT_VOID, final_value: 0 });
+    Ok(())
+}
+
+/// Prices a buy, updates market and position, returns
 /// (shares bought, USDC to transfer in).
 fn apply_buy(m: &mut Market, p: &mut Position, side: u8, usdc_in: u64, min_shares_out: u64, max_bet: u64) -> Result<(u64, u64)> {
     if p.shares == 0 {
@@ -973,10 +1003,10 @@ pub struct CreateMarket<'info> {
     )]
     pub vault: Account<'info, TokenAccount>,
     #[account(
-        init, payer = creator, space = 8 + Position::INIT_SPACE,
-        seeds = [b"position", market.key().as_ref(), creator.key().as_ref()], bump
+        init, payer = creator, space = 8 + MarketBonus::INIT_SPACE,
+        seeds = [b"bonus", market.key().as_ref()], bump
     )]
-    pub position: Account<'info, Position>,
+    pub bonus: Account<'info, MarketBonus>,
     #[account(mut, token::mint = usdc_mint, token::authority = creator)]
     pub creator_usdc: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
@@ -1039,15 +1069,25 @@ pub struct SetResolver<'info> {
     pub system_program: Program<'info, System>,
 }
 
+/// reject_market (signer must be the admin) and cancel_pending (signer must be the creator).
+/// The seed refund can only go to a USDC account owned by the market's creator.
 #[derive(Accounts)]
-pub struct CancelPending<'info> {
-    #[account(mut)]
-    pub creator: Signer<'info>,
-    #[account(
-        mut, seeds = [b"market", market.id.to_le_bytes().as_ref()], bump = market.bump,
-        has_one = creator @ MmError::Unauthorized
-    )]
+pub struct CloseCreation<'info> {
+    pub signer: Signer<'info>,
+    #[account(seeds = [b"config"], bump = config.bump)]
+    pub config: Account<'info, Config>,
+    #[account(mut, seeds = [b"market", market.id.to_le_bytes().as_ref()], bump = market.bump)]
     pub market: Account<'info, Market>,
+    #[account(mut, seeds = [b"vault", market.key().as_ref()], bump = market.vault_bump)]
+    pub vault: Account<'info, TokenAccount>,
+    #[account(mut, seeds = [b"bonus", market.key().as_ref()], bump = bonus.bump)]
+    pub bonus: Account<'info, MarketBonus>,
+    /// CHECK: must be the market's creator; only used to check who owns creator_usdc.
+    #[account(address = market.creator @ MmError::Unauthorized)]
+    pub creator: UncheckedAccount<'info>,
+    #[account(mut, token::mint = config.usdc_mint, token::authority = creator)]
+    pub creator_usdc: Account<'info, TokenAccount>,
+    pub token_program: Program<'info, Token>,
 }
 
 #[derive(Accounts)]
@@ -1309,6 +1349,8 @@ pub enum MmError {
     Slippage,
     #[msg("You do not have that many shares")]
     NotEnoughShares,
+    #[msg("The market creator and the admin cannot trade in this market")]
+    CreatorCannotTrade,
 }
 
 #[cfg(test)]

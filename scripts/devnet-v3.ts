@@ -1,4 +1,5 @@
 // Devnet setup and live test for v3: 3 outcome market, bonus, open creation with creator fees, auto payouts.
+// Note: since the seed-as-prize change the creator holds no shares and cannot trade; the "run" step predates it.
 // Usage: npx ts-node -P tsconfig.json scripts/devnet-v3.ts <setup|run|pay|status>
 // Uses the Helius devnet RPC from ~/.config/solana/mememarkets-mainnet/helius-key. Never prints secrets.
 import * as anchor from "@coral-xyz/anchor";
@@ -66,14 +67,14 @@ const trade = (k: Keypair, market: PublicKey) => ({
   userUsdc: usdcOf(k.publicKey), tokenProgram: TOKEN_PROGRAM_ID, systemProgram: SystemProgram.programId,
 });
 const ra = (market: PublicKey) => ({ authority: resolver.publicKey, config: configPda, resolverConfig: resolverPda, market });
-async function create(k: Keypair, outcomes: number, side: number, amount: number, rules: string) {
+async function create(k: Keypair, outcomes: number, _side: number, amount: number, rules: string) {
   const c = await program.account.config.fetch(configPda);
   const market = marketPda(c.marketCount);
   const endTs = (await chainNow()) + 3600 + 120;
   const sig = await as(k).methods
-    .createMarket(Keypair.generate().publicKey, 0, 0, new BN(outcomes === 2 ? 1_000_000 : 0), 0, new BN(endTs), outcomes, side, new BN(amount), new BN(0), hash(rules))
+    .createMarket(Keypair.generate().publicKey, 0, 0, new BN(outcomes === 2 ? 1_000_000 : 0), 0, new BN(endTs), outcomes, new BN(amount), hash(rules))
     .accountsPartial({ creator: k.publicKey, config: configPda, usdcMint: USDC, market, vault: vaultPda(market),
-      position: positionPda(market, k.publicKey), creatorUsdc: usdcOf(k.publicKey), tokenProgram: TOKEN_PROGRAM_ID, systemProgram: SystemProgram.programId })
+      bonus: bonusPda(market), creatorUsdc: usdcOf(k.publicKey), tokenProgram: TOKEN_PROGRAM_ID, systemProgram: SystemProgram.programId })
     .rpc();
   return { market, sig };
 }
