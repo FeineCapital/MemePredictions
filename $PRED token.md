@@ -1,4 +1,10 @@
-# MemeMarkets deployment
+# Meme Coin Predictions token information
+
+- **Name:** MemePredictions
+- **Ticker:** $PRED
+- **Contract address:** `AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump`
+
+## Program deployment
 
 Version 3 (2 or 3 outcomes, creator fees, Verified badge, open creation switch, rules hash, bonus pot, automatic payouts). Devnet.
 
@@ -23,5 +29,5 @@ Production build md5 `784f86c4096d25a7a707a7c4b11ab455`, verified byte for byte 
 - Admin: https://solscan.io/account/7TPuntBHLRAyjBNKvMx24aKcXL9aGT2uaacUPJSWEMeF?cluster=devnet
 
 ## Earlier versions (devnet)
-- v2 share trading `3B84AX7kyaGSMrxyKZrJBng4MQtirx9CF1G54yGGL1RM`: retired, kept until its open test markets settle.
+- v2 share trading `3B84AX7kyaGSMrxyKZrJBng4MQtirx9CF1G54yGGL1RM`: closed after every holder was refunded.
 - v1 pool `EaYBtMWdemH7szKjdtiti6iLgRi6HDTdqpsyk7qDwh49`: closed.
