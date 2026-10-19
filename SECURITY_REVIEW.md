@@ -96,6 +96,15 @@ New risks to know about:
 ## Change: automatic payouts with claim_for (2026-10-18)
 `claim_for` lets any signer pay a position's payout or refund. It shares one code path (`pay_out`) with `claim`, so the amount, timing (after the dispute window, not while disputed) and the single `claimed` flag are identical. The destination must be a USDC token account whose owner is the position's user (`token::authority = owner`), and the position is derived from `["position", market, owner]` with `position.user == owner`, so a caller can neither redirect funds nor pay from someone else's position. The caller only pays the transaction fee. Tested: exact amounts for winners, losers and void refunds, caller balance unchanged, payout into the caller's own account rejected (`ConstraintTokenOwner`), mismatched owner and position rejected (`ConstraintSeeds`), double payment rejected through both paths, and calls before resolution or inside the dispute window rejected. Run live on devnet (DEVNET_SMOKE_TEST.md). Note: if a holder closed their USDC account, `claim_for` fails for them and they claim manually.
 
+## Version 3 (2026-10-19)
+New program (account layouts changed). What changed and how it was checked:
+- **2 or 3 outcomes.** Reserves and share supplies are arrays; every outcome index is checked against `outcome_count` (`BadSide`, `BadParams`). Winners split every outcome's reserve minus the fee; the fee is capped at the money on the losing outcomes. If nobody holds the winning outcome, every holder gets their own outcome's reserve back and only reserves nobody holds go to the platform. Unit tested for 2 and 3 outcomes, and asserted after every step on chain.
+- **Early resolution.** Only from Locked. A 2 outcome market can only resolve Yes early (No means "not by the deadline"); a 3 outcome market can resolve any outcome early. Void only after the deadline (or by the admin with `void_market`).
+- **Open creation and Verified.** `set_creation` (admin) controls whether user markets need approval. Admin created markets are always Open and Verified with no creator share. `set_verified` is admin only and display only.
+- **Creator fee share.** Copied into each market at creation. `collect_fees` sends the platform part and keeps the creator part in the vault as `creator_fee_owed`; `claim_creator_fee` pays it once, only to a USDC account owned by `market.creator`. The vault stays solvent: the test suite counts the unpaid creator part as owed.
+- **Rules hash.** `rules_hash` (sha256 of the rules text) is fixed at creation, so the wording users bet on cannot be changed later without it showing.
+- **Residual risks:** 3 outcome markets are resolved by the admin, not the watcher, so they carry the same admin trust as before. With open creation on, anyone can create markets on any token, including thin ones that can be pushed to a target; the site should apply minimum liquidity and market cap rules and the admin can void.
+
 ## Checks that passed (no issue found), version 2 pass
 - Signer checks: every admin instruction uses `has_one = admin` on the config PDA. `lock`, `unlock` and `resolve` accept the admin or the key stored in `ResolverConfig` (zero key disabled). `cancel_pending` uses `has_one = creator`. `claim` and `sell_shares` pay only a token account owned by the signer, with the config mint.
 - PDA seeds: config `["config"]`, resolver `["resolver"]`, market `["market", id le]`, vault `["vault", market]`, position `["position", market, user]`. All verified with stored bumps. `Account<>` checks owner and discriminator.
@@ -109,6 +118,6 @@ New risks to know about:
 - Build: the deployed binary is reproducible. A fresh `./scripts/build.sh` gives the same md5 as the bytes on devnet, and `scripts/mainnet.sh` refuses to deploy anything else.
 
 ## Testing
-- `cargo test`: 14 unit tests pass (curve math, rounding, solvency, payouts, refunds, sweeps, overflow bounds).
-- `anchor test --skip-build` on the short-time test build (`./scripts/build.sh test`): 28 integration test groups pass, each with many checks. Every instruction is covered. Every buy, sell, claim and fee amount is checked against an independent bigint copy of the math. Vault solvency is asserted after every step, and total withdrawn plus fees never exceed total deposited.
+- `cargo test`: 15 unit tests pass (v3) (curve math, rounding, solvency, payouts, refunds, sweeps, overflow bounds).
+- `anchor test --skip-build` on the short-time test build (`./scripts/build.sh test`): 24 integration test groups pass on v3, each with many checks. Every instruction is covered. Every buy, sell, claim and fee amount is checked against an independent bigint copy of the math. Vault solvency is asserted after every step, and total withdrawn plus fees never exceed total deposited.
 - The short-time build only changes `MIN_DURATION` (2 s) and `EMERGENCY_DELAY` (6 s) behind the `short-time` cargo feature. The deployed binary is built without it.

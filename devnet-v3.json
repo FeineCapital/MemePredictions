@@ -1,0 +1,11 @@
+{
+  "ok": {
+    "initialize": "2kbbxwfhsDiRFWPcoQo1WDk7x3KRrfS1Ryk4p61uQGa9wUjmWLzPdWKfGcpRcbmKntedaxsuzNsrE4R2pST6ZA2w",
+    "set_resolver": "3yWa9vRTrVFprdKEjSaHhwQb7r7v68E4n3Mh1ZDB4uXim4CSLw3Shk6dn3pY73hqBJ1SMX6twTQMyTymKodw7Ax5",
+    "set_admin": "4M8PmhahBiVbD3S8mnV5iBFmrZ4adw5VQZxDDYkbQtvvGHBisqPwGXfmkEh9T99YYVUg7r7CCzYtyRmbJXQUrK8p",
+    "fund_sol": "4xUHKTX6qNCrwRLQQ74SFJvM1bdMWMtabzvVLNVRMaSGQtCDkHeKkXYM3jGb9bgLbZh17bdVqWV9rXnkwyNLrjKQ",
+    "fund_usdc_bettor1": "47bMCJHwv38pgbPx5V5XTxZAWxZzsiJ3mMWh3Hz61iRx4skcb1Xe2UHGMuKEbV7mnKknsgZNSPXUKroM11AHuzFN"
+  },
+  "mustFail": {},
+  "notes": {}
+}

@@ -6,10 +6,10 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-mememarkets = "3B84AX7kyaGSMrxyKZrJBng4MQtirx9CF1G54yGGL1RM"
+mememarkets = "BGCcEd1X76oZ2yF9nRoun2gGGLJC3D59Z2XEJNJ6KmhZ"
 
 [programs.localnet]
-mememarkets = "3B84AX7kyaGSMrxyKZrJBng4MQtirx9CF1G54yGGL1RM"
+mememarkets = "BGCcEd1X76oZ2yF9nRoun2gGGLJC3D59Z2XEJNJ6KmhZ"
 
 [registry]
 url = "https://api.apr.dev"

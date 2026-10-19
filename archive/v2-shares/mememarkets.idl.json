@@ -1,0 +1,2979 @@
+{
+  "address": "3B84AX7kyaGSMrxyKZrJBng4MQtirx9CF1G54yGGL1RM",
+  "metadata": {
+    "name": "mememarkets",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Yes or no prediction markets for Solana memecoins, bets in USDC"
+  },
+  "instructions": [
+    {
+      "name": "add_bonus",
+      "docs": [
+        "Bonus pot: anyone (normally the platform treasury, funded by creator fees) adds USDC to a",
+        "market without taking a side. No shares are minted and no position is created, so the funder",
+        "cannot win it back. It is split evenly into the Yes and No reserves, which means the winners",
+        "receive all of it on resolution (and on a void each side's holders get their half back).",
+        "Only while the market is Pending or Open."
+      ],
+      "discriminator": [
+        36,
+        84,
+        255,
+        132,
+        96,
+        126,
+        176,
+        112
+      ],
+      "accounts": [
+        {
+          "name": "funder",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bonus",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  110,
+                  117,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "funder_usdc",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "approve_market",
+      "discriminator": [
+        195,
+        83,
+        73,
+        224,
+        150,
+        237,
+        150,
+        5
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "buy_shares",
+      "docs": [
+        "Buy shares of one side with `usdc_in` USDC at the curve price. Reverts if fewer than",
+        "`min_shares_out` shares would be received (slippage guard). Only while Open, before the deadline."
+      ],
+      "discriminator": [
+        40,
+        239,
+        138,
+        154,
+        8,
+        37,
+        106,
+        108
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_usdc",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "side",
+          "type": "u8"
+        },
+        {
+          "name": "usdc_in",
+          "type": "u64"
+        },
+        {
+          "name": "min_shares_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "cancel_pending",
+      "docs": [
+        "The creator can pull a market that nobody approved yet. The seed is refunded through claim."
+      ],
+      "discriminator": [
+        74,
+        87,
+        109,
+        242,
+        64,
+        192,
+        151,
+        71
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "market"
+          ]
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim",
+      "docs": [
+        "Pays a winner, or refunds a stake on a void, rejected or one sided market. Pays the signer's own wallet only."
+      ],
+      "discriminator": [
+        62,
+        198,
+        214,
+        193,
+        213,
+        159,
+        108,
+        210
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_usdc",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim_for",
+      "docs": [
+        "Automatic payout: anyone (normally the price watcher) can pay a holder's payout or refund",
+        "into that holder's own USDC account. The money can only go to a token account owned by the",
+        "position's owner, so the caller cannot redirect it. Same rules and timing as claim."
+      ],
+      "discriminator": [
+        245,
+        67,
+        97,
+        44,
+        59,
+        223,
+        144,
+        1
+      ],
+      "accounts": [
+        {
+          "name": "caller",
+          "docs": [
+            "Anyone. Pays only the transaction fee; receives nothing."
+          ],
+          "signer": true
+        },
+        {
+          "name": "owner",
+          "docs": [
+            "owner_usdc. Does not sign and receives nothing directly."
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_usdc",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "collect_fees",
+      "docs": [
+        "Sends the platform fee to the fee vault. Anyone can call it, once per market: on a resolved",
+        "market after the dispute window, or on a void or rejected market (sweeps retained sell fees",
+        "from sides nobody holds any more, since no refund can reach them)."
+      ],
+      "discriminator": [
+        164,
+        152,
+        207,
+        99,
+        30,
+        186,
+        19,
+        182
+      ],
+      "accounts": [
+        {
+          "name": "caller",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_vault",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_house_market",
+      "docs": [
+        "Admin only: opens a market straight away (no review) funded by a house seed that takes no side.",
+        "The seed goes into the bonus pot exactly like add_bonus: no shares, no position, so the house",
+        "wallet never wins or loses it and is not counted as a bettor. Bettors split it on resolution."
+      ],
+      "discriminator": [
+        151,
+        91,
+        253,
+        118,
+        170,
+        79,
+        168,
+        157
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config.market_count",
+                "account": "Config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bonus",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  110,
+                  117,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin_usdc",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "token_mint",
+          "type": "pubkey"
+        },
+        {
+          "name": "metric",
+          "type": "u8"
+        },
+        {
+          "name": "direction",
+          "type": "u8"
+        },
+        {
+          "name": "target",
+          "type": "u64"
+        },
+        {
+          "name": "target_decimals",
+          "type": "u8"
+        },
+        {
+          "name": "end_ts",
+          "type": "i64"
+        },
+        {
+          "name": "seed_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "create_market",
+      "docs": [
+        "Anyone can propose a market with a first bet. It waits in Pending until the admin approves."
+      ],
+      "discriminator": [
+        103,
+        226,
+        97,
+        235,
+        200,
+        188,
+        251,
+        254
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config.market_count",
+                "account": "Config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator_usdc",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "token_mint",
+          "type": "pubkey"
+        },
+        {
+          "name": "metric",
+          "type": "u8"
+        },
+        {
+          "name": "direction",
+          "type": "u8"
+        },
+        {
+          "name": "target",
+          "type": "u64"
+        },
+        {
+          "name": "target_decimals",
+          "type": "u8"
+        },
+        {
+          "name": "end_ts",
+          "type": "i64"
+        },
+        {
+          "name": "side",
+          "type": "u8"
+        },
+        {
+          "name": "seed_amount",
+          "type": "u64"
+        },
+        {
+          "name": "min_shares_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "dispute_market",
+      "docs": [
+        "Any bettor in the market can freeze payouts during the dispute window."
+      ],
+      "discriminator": [
+        141,
+        181,
+        103,
+        68,
+        255,
+        237,
+        53,
+        26
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "emergency_void",
+      "docs": [
+        "Safety valve. If the admin never resolves (open or locked), or never settles a dispute, anyone can void the market",
+        "after a delay. Everyone is then refunded in full."
+      ],
+      "discriminator": [
+        108,
+        30,
+        145,
+        27,
+        141,
+        33,
+        106,
+        177
+      ],
+      "accounts": [
+        {
+          "name": "caller",
+          "signer": true
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize",
+      "docs": [
+        "One time setup. Call it in the same breath as the deploy so nobody else initializes first."
+      ],
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "docs": [
+            "Must be the program's upgrade authority, so nobody can front run the setup after deploy."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "fee_vault"
+        },
+        {
+          "name": "program",
+          "address": "3B84AX7kyaGSMrxyKZrJBng4MQtirx9CF1G54yGGL1RM"
+        },
+        {
+          "name": "program_data"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "min_bet",
+          "type": "u64"
+        },
+        {
+          "name": "max_bet",
+          "type": "u64"
+        },
+        {
+          "name": "dispute_secs",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "lock_market",
+      "docs": [
+        "Admin freezes betting the moment the target looks hit, so nobody can bet on a known outcome",
+        "while the resolver checks the average. The lock time is kept in resolved_ts while Locked."
+      ],
+      "discriminator": [
+        107,
+        8,
+        184,
+        91,
+        223,
+        13,
+        180,
+        38
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "resolver_config",
+          "optional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  111,
+                  108,
+                  118,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "reject_market",
+      "docs": [
+        "Rejected markets refund every position (the creator seed) through claim."
+      ],
+      "discriminator": [
+        214,
+        108,
+        186,
+        227,
+        122,
+        62,
+        61,
+        43
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "resolve_market",
+      "docs": [
+        "Admin sets the outcome. result: 1 yes, 2 no, 3 void.",
+        "After the deadline: from Open or Locked, any result.",
+        "Before the deadline: only Yes (target hit), and only from Locked, so betting is already frozen.",
+        "No and Void need the deadline to pass (No means the target was not hit in time).",
+        "final_value is the value the admin read off chain, stored for the public resolution record."
+      ],
+      "discriminator": [
+        155,
+        23,
+        80,
+        173,
+        46,
+        74,
+        23,
+        239
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "resolver_config",
+          "optional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  111,
+                  108,
+                  118,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "result",
+          "type": "u8"
+        },
+        {
+          "name": "final_value",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "sell_shares",
+      "docs": [
+        "Cash out: sell `shares` back to the curve at the current price, minus the market fee, which",
+        "stays in the pot for the eventual winners. Reverts if the user would get less than",
+        "`min_usdc_out`. Only while Open, before the deadline."
+      ],
+      "discriminator": [
+        184,
+        164,
+        169,
+        16,
+        231,
+        158,
+        199,
+        196
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_usdc",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "shares",
+          "type": "u64"
+        },
+        {
+          "name": "min_usdc_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "set_admin",
+      "discriminator": [
+        251,
+        163,
+        0,
+        52,
+        91,
+        194,
+        187,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_curve",
+      "docs": [
+        "Price curve for new markets: starting share price (USDC base units) and depth",
+        "(share units per 1 base unit of price rise). Existing markets keep their curve."
+      ],
+      "discriminator": [
+        202,
+        162,
+        243,
+        17,
+        177,
+        54,
+        84,
+        168
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "base",
+          "type": "u64"
+        },
+        {
+          "name": "depth",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "set_limits",
+      "docs": [
+        "min_bet is the smallest buy, max_bet the most a wallet can have in one market (cost basis).",
+        "Limits apply to new trades. Fee and dispute window apply to new markets only: a market keeps the",
+        "fee and dispute window it was created with."
+      ],
+      "discriminator": [
+        207,
+        50,
+        250,
+        67,
+        211,
+        33,
+        70,
+        91
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "min_bet",
+          "type": "u64"
+        },
+        {
+          "name": "max_bet",
+          "type": "u64"
+        },
+        {
+          "name": "dispute_secs",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "set_paused",
+      "docs": [
+        "Kill switch. Pauses new markets and all buying and selling. Claims and refunds always keep working."
+      ],
+      "discriminator": [
+        91,
+        60,
+        125,
+        192,
+        176,
+        225,
+        166,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "paused",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "set_resolver",
+      "docs": [
+        "Sets the resolver: a second key (for the price watcher server) that can only lock, unlock and",
+        "resolve markets. Pass the zero key to turn it off. Admin keeps every power."
+      ],
+      "discriminator": [
+        137,
+        108,
+        27,
+        51,
+        202,
+        16,
+        33,
+        119
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "resolver_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  111,
+                  108,
+                  118,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "resolver",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "settle_dispute",
+      "docs": [
+        "Admin decides a dispute: 1 yes, 2 no, 3 void. Payouts open right away after."
+      ],
+      "discriminator": [
+        155,
+        147,
+        5,
+        44,
+        20,
+        204,
+        146,
+        43
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "result",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "unlock_market",
+      "docs": [
+        "False alarm: reopen betting. Only before the deadline."
+      ],
+      "discriminator": [
+        1,
+        224,
+        202,
+        93,
+        151,
+        186,
+        248,
+        13
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "resolver_config",
+          "optional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  111,
+                  108,
+                  118,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "void_market",
+      "docs": [
+        "Admin can cancel an open or locked market at any time, for example a rugged token or manipulation.",
+        "Everyone is refunded."
+      ],
+      "discriminator": [
+        243,
+        175,
+        46,
+        124,
+        95,
+        101,
+        39,
+        69
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    },
+    {
+      "name": "Market",
+      "discriminator": [
+        219,
+        190,
+        213,
+        55,
+        0,
+        227,
+        198,
+        154
+      ]
+    },
+    {
+      "name": "MarketBonus",
+      "discriminator": [
+        250,
+        255,
+        90,
+        28,
+        255,
+        240,
+        225,
+        95
+      ]
+    },
+    {
+      "name": "Position",
+      "discriminator": [
+        170,
+        188,
+        143,
+        228,
+        122,
+        64,
+        247,
+        208
+      ]
+    },
+    {
+      "name": "ResolverConfig",
+      "discriminator": [
+        204,
+        63,
+        161,
+        214,
+        155,
+        61,
+        188,
+        176
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "BonusAdded",
+      "discriminator": [
+        75,
+        179,
+        192,
+        153,
+        203,
+        165,
+        127,
+        68
+      ]
+    },
+    {
+      "name": "Claimed",
+      "discriminator": [
+        217,
+        192,
+        123,
+        72,
+        108,
+        150,
+        248,
+        33
+      ]
+    },
+    {
+      "name": "MarketCreated",
+      "discriminator": [
+        88,
+        184,
+        130,
+        231,
+        226,
+        84,
+        6,
+        58
+      ]
+    },
+    {
+      "name": "MarketDisputed",
+      "discriminator": [
+        211,
+        4,
+        132,
+        75,
+        182,
+        173,
+        36,
+        0
+      ]
+    },
+    {
+      "name": "MarketLocked",
+      "discriminator": [
+        57,
+        30,
+        242,
+        116,
+        238,
+        156,
+        185,
+        189
+      ]
+    },
+    {
+      "name": "MarketResolved",
+      "discriminator": [
+        89,
+        67,
+        230,
+        95,
+        143,
+        106,
+        199,
+        202
+      ]
+    },
+    {
+      "name": "ResolverSet",
+      "discriminator": [
+        238,
+        59,
+        81,
+        112,
+        6,
+        194,
+        193,
+        124
+      ]
+    },
+    {
+      "name": "Traded",
+      "discriminator": [
+        225,
+        202,
+        73,
+        175,
+        147,
+        43,
+        160,
+        150
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Not allowed"
+    },
+    {
+      "code": 6001,
+      "name": "Paused",
+      "msg": "Trading is paused"
+    },
+    {
+      "code": 6002,
+      "name": "BadConfig",
+      "msg": "Bad config values"
+    },
+    {
+      "code": 6003,
+      "name": "BadParams",
+      "msg": "Bad market parameters"
+    },
+    {
+      "code": 6004,
+      "name": "BadSide",
+      "msg": "Side must be 1 (yes) or 2 (no)"
+    },
+    {
+      "code": 6005,
+      "name": "BadAmount",
+      "msg": "Amount is outside the allowed range"
+    },
+    {
+      "code": 6006,
+      "name": "BadDeadline",
+      "msg": "Deadline must be 1 hour to 90 days away"
+    },
+    {
+      "code": 6007,
+      "name": "BadStatus",
+      "msg": "Market is not in the right status"
+    },
+    {
+      "code": 6008,
+      "name": "BettingClosed",
+      "msg": "Trading is closed for this market"
+    },
+    {
+      "code": 6009,
+      "name": "OtherSide",
+      "msg": "You hold shares on the other side of this market. Sell them first"
+    },
+    {
+      "code": 6010,
+      "name": "OverMax",
+      "msg": "Over the per wallet maximum for this market"
+    },
+    {
+      "code": 6011,
+      "name": "TooEarly",
+      "msg": "Too early"
+    },
+    {
+      "code": 6012,
+      "name": "DisputeClosed",
+      "msg": "Dispute window is closed"
+    },
+    {
+      "code": 6013,
+      "name": "NotClaimable",
+      "msg": "Nothing to claim yet"
+    },
+    {
+      "code": 6014,
+      "name": "AlreadyClaimed",
+      "msg": "Already claimed"
+    },
+    {
+      "code": 6015,
+      "name": "Math",
+      "msg": "Math error"
+    },
+    {
+      "code": 6016,
+      "name": "DeadlinePassed",
+      "msg": "Deadline has passed"
+    },
+    {
+      "code": 6017,
+      "name": "Slippage",
+      "msg": "Price moved: you would get less than your minimum"
+    },
+    {
+      "code": 6018,
+      "name": "NotEnoughShares",
+      "msg": "You do not have that many shares"
+    }
+  ],
+  "types": [
+    {
+      "name": "BonusAdded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "funder",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "total_bonus",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Claimed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "usdc_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "min_bet",
+            "type": "u64"
+          },
+          {
+            "name": "max_bet",
+            "type": "u64"
+          },
+          {
+            "name": "dispute_secs",
+            "type": "i64"
+          },
+          {
+            "name": "market_count",
+            "type": "u64"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "curve_base",
+            "docs": [
+              "Starting share price for new markets, USDC base units per whole share."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "curve_depth",
+            "docs": [
+              "Share units bought per 1 base unit of price rise, for new markets."
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Market",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "metric",
+            "type": "u8"
+          },
+          {
+            "name": "direction",
+            "type": "u8"
+          },
+          {
+            "name": "target",
+            "type": "u64"
+          },
+          {
+            "name": "target_decimals",
+            "type": "u8"
+          },
+          {
+            "name": "end_ts",
+            "type": "i64"
+          },
+          {
+            "name": "created_ts",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "MarketStatus"
+              }
+            }
+          },
+          {
+            "name": "result",
+            "type": "u8"
+          },
+          {
+            "name": "yes_reserve",
+            "docs": [
+              "USDC held for each side: bought in minus sold out, plus sell fees kept in the pot."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "no_reserve",
+            "type": "u64"
+          },
+          {
+            "name": "yes_shares",
+            "docs": [
+              "Share supply per side (share units, 1_000_000 per share)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "no_shares",
+            "type": "u64"
+          },
+          {
+            "name": "curve_base",
+            "docs": [
+              "Price curve copied from config at creation."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "curve_depth",
+            "type": "u64"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "dispute_secs",
+            "docs": [
+              "Dispute window copied from config at creation."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "resolved_ts",
+            "docs": [
+              "Time of the last lock, resolve or void. Holds the lock time while Locked."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "dispute_ends",
+            "type": "i64"
+          },
+          {
+            "name": "disputed",
+            "type": "bool"
+          },
+          {
+            "name": "fee_collected",
+            "type": "bool"
+          },
+          {
+            "name": "final_value",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "vault_bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketBonus",
+      "docs": [
+        "Running total of bonus USDC added to one market, PDA [\"bonus\", market]. Informational: payouts",
+        "already include the bonus through the reserves. Lets the app show the bonus and exclude it from odds."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "total",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "end_ts",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketDisputed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketLocked",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "locked",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketResolved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "result",
+            "type": "u8"
+          },
+          {
+            "name": "final_value",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pending"
+          },
+          {
+            "name": "Open"
+          },
+          {
+            "name": "Resolved"
+          },
+          {
+            "name": "Void"
+          },
+          {
+            "name": "Rejected"
+          },
+          {
+            "name": "Locked"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Position",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "side",
+            "type": "u8"
+          },
+          {
+            "name": "shares",
+            "docs": [
+              "Shares held (share units)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "cost",
+            "docs": [
+              "Net USDC put in (cost basis), reduced in proportion when shares are sold. For limits and P&L."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "claimed",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ResolverConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "resolver",
+            "docs": [
+              "Key allowed to lock, unlock and resolve. Zero key means no resolver."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ResolverSet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "resolver",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Traded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "side",
+            "type": "u8"
+          },
+          {
+            "name": "buy",
+            "docs": [
+              "true for a buy, false for a sell (cash out)"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "shares",
+            "type": "u64"
+          },
+          {
+            "name": "usdc",
+            "docs": [
+              "USDC paid in (buy) or paid out after the fee (sell)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "yes_reserve",
+            "type": "u64"
+          },
+          {
+            "name": "no_reserve",
+            "type": "u64"
+          },
+          {
+            "name": "yes_shares",
+            "type": "u64"
+          },
+          {
+            "name": "no_shares",
+            "type": "u64"
+          },
+          {
+            "name": "yes_price",
+            "docs": [
+              "Spot price after the trade, USDC base units per whole share"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "no_price",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -12,10 +12,10 @@ cd "$(dirname "$0")/.."
 KEY="$HOME/.config/solana/mememarkets-mainnet/deployer.json"
 RPC="${RPC_URL:-https://api.mainnet-beta.solana.com}"
 PROGRAM_KEYPAIR="target/deploy/mememarkets-keypair.json"
-PROGRAM_ID="3B84AX7kyaGSMrxyKZrJBng4MQtirx9CF1G54yGGL1RM"
+PROGRAM_ID="BGCcEd1X76oZ2yF9nRoun2gGGLJC3D59Z2XEJNJ6KmhZ"
 SO="target/deploy/mememarkets.so"
 # md5 of the production build that passed all tests and runs on devnet. Not the short-time test build.
-EXPECTED_MD5="e9dc38193ac9a249d613e74f2c4dc862"
+EXPECTED_MD5="784f86c4096d25a7a707a7c4b11ab455"
 
 DEPLOYER="$(solana-keygen pubkey "$KEY")"
 step="${1:-}"
@@ -40,12 +40,12 @@ case "$step" in
     check_build
     bal="$(solana balance "$DEPLOYER" -u "$RPC" | awk '{print $1}')"
     echo "Deployer $DEPLOYER has $bal SOL"
-    awk -v b="$bal" 'BEGIN { exit !(b >= 2.8) }' || { echo "STOP: need at least 2.8 SOL, send 3.5 to be safe."; exit 1; }
+    awk -v b="$bal" 'BEGIN { exit !(b >= 3.5) }' || { echo "STOP: need at least 3.5 SOL, send 4 to be safe."; exit 1; }
     if solana program show "$PROGRAM_ID" -u "$RPC" >/dev/null 2>&1; then
       echo "STOP: the program already exists on mainnet. Nothing to do."; exit 1
     fi
     echo
-    echo "This deploys to MAINNET with real SOL. About 2.5 SOL becomes a refundable storage deposit."
+    echo "This deploys to MAINNET with real SOL. About 3.2 SOL becomes a refundable storage deposit."
     read -r -p "Type DEPLOY to continue: " ok
     [ "$ok" = "DEPLOY" ] || { echo "Cancelled."; exit 1; }
     solana program deploy "$SO" \

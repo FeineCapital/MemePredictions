@@ -1,5 +1,5 @@
 {
-  "address": "3B84AX7kyaGSMrxyKZrJBng4MQtirx9CF1G54yGGL1RM",
+  "address": "BGCcEd1X76oZ2yF9nRoun2gGGLJC3D59Z2XEJNJ6KmhZ",
   "metadata": {
     "name": "mememarkets",
     "version": "0.1.0",
@@ -7,6 +7,137 @@
     "description": "Yes or no prediction markets for Solana memecoins, bets in USDC"
   },
   "instructions": [
+    {
+      "name": "add_bonus",
+      "docs": [
+        "Bonus pot: anyone (normally the platform treasury, funded by creator fees) adds USDC to a",
+        "market without taking a side. No shares are minted and no position is created, so the funder",
+        "cannot win it back. It is split evenly across the outcome reserves, which means the winners",
+        "receive it on resolution (and on a void each outcome's holders get its share back).",
+        "Only while the market is Pending or Open."
+      ],
+      "discriminator": [
+        36,
+        84,
+        255,
+        132,
+        96,
+        126,
+        176,
+        112
+      ],
+      "accounts": [
+        {
+          "name": "funder",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bonus",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  110,
+                  117,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "funder_usdc",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
     {
       "name": "approve_market",
       "discriminator": [
@@ -75,7 +206,7 @@
     {
       "name": "buy_shares",
       "docs": [
-        "Buy shares of one side with `usdc_in` USDC at the curve price. Reverts if fewer than",
+        "Buy shares of one outcome with `usdc_in` USDC at the curve price. Reverts if fewer than",
         "`min_shares_out` shares would be received (slippage guard). Only while Open, before the deadline."
       ],
       "discriminator": [
@@ -269,7 +400,7 @@
     {
       "name": "claim",
       "docs": [
-        "Pays a winner, or refunds a stake on a void, rejected or one sided market. Pays the signer's own wallet only."
+        "Pays a winner, or refunds a stake on a void or rejected market. Pays the signer's own wallet only."
       ],
       "discriminator": [
         62,
@@ -380,6 +511,108 @@
         },
         {
           "name": "user_usdc",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim_creator_fee",
+      "docs": [
+        "Pays the market creator's fee share into the creator's own USDC account. Anyone can call it",
+        "(normally the watcher), once, after collect_fees."
+      ],
+      "discriminator": [
+        26,
+        97,
+        138,
+        203,
+        132,
+        171,
+        141,
+        252
+      ],
+      "accounts": [
+        {
+          "name": "caller",
+          "docs": [
+            "Anyone. Pays only the transaction fee; receives nothing."
+          ],
+          "signer": true
+        },
+        {
+          "name": "creator"
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator_usdc",
           "writable": true
         },
         {
@@ -526,9 +759,9 @@
     {
       "name": "collect_fees",
       "docs": [
-        "Sends the platform fee to the fee vault. Anyone can call it, once per market: on a resolved",
-        "market after the dispute window, or on a void or rejected market (sweeps retained sell fees",
-        "from sides nobody holds any more, since no refund can reach them)."
+        "Sends the platform fee, once per market: on a resolved market after the dispute window, or on",
+        "a void or rejected market (sweeps reserves of outcomes nobody holds). The market's creator",
+        "share of that fee stays in the vault as creator_fee_owed for claim_creator_fee."
       ],
       "discriminator": [
         164,
@@ -623,7 +856,10 @@
     {
       "name": "create_market",
       "docs": [
-        "Anyone can propose a market with a first bet. It waits in Pending until the admin approves."
+        "Creates a market with 2 or 3 outcomes and buys the creator's first shares.",
+        "Admin created markets open right away and are Verified. Other markets open right away when",
+        "creation is open, otherwise they wait in Pending for admin approval.",
+        "rules_hash commits to the market's full rules text (sha256), so the wording cannot change later."
       ],
       "discriminator": [
         103,
@@ -777,6 +1013,10 @@
           "type": "i64"
         },
         {
+          "name": "outcome_count",
+          "type": "u8"
+        },
+        {
           "name": "side",
           "type": "u8"
         },
@@ -787,13 +1027,22 @@
         {
           "name": "min_shares_out",
           "type": "u64"
+        },
+        {
+          "name": "rules_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
         }
       ]
     },
     {
       "name": "dispute_market",
       "docs": [
-        "Any bettor in the market can freeze payouts during the dispute window."
+        "Any holder in the market can freeze payouts during the dispute window."
       ],
       "discriminator": [
         141,
@@ -868,8 +1117,8 @@
     {
       "name": "emergency_void",
       "docs": [
-        "Safety valve. If the admin never resolves (open or locked), or never settles a dispute, anyone can void the market",
-        "after a delay. Everyone is then refunded in full."
+        "Safety valve. If nobody resolves (open or locked), or nobody settles a dispute, anyone can",
+        "void the market after a delay. Everyone is then refunded."
       ],
       "discriminator": [
         108,
@@ -916,7 +1165,8 @@
     {
       "name": "initialize",
       "docs": [
-        "One time setup. Call it in the same breath as the deploy so nobody else initializes first."
+        "One time setup, only by the program's upgrade authority. Market creation starts closed",
+        "(admin approval needed) with no creator fee share."
       ],
       "discriminator": [
         175,
@@ -964,7 +1214,7 @@
         },
         {
           "name": "program",
-          "address": "3B84AX7kyaGSMrxyKZrJBng4MQtirx9CF1G54yGGL1RM"
+          "address": "BGCcEd1X76oZ2yF9nRoun2gGGLJC3D59Z2XEJNJ6KmhZ"
         },
         {
           "name": "program_data"
@@ -996,8 +1246,8 @@
     {
       "name": "lock_market",
       "docs": [
-        "Admin freezes betting the moment the target looks hit, so nobody can bet on a known outcome",
-        "while the resolver checks the average. The lock time is kept in resolved_ts while Locked."
+        "Freezes trading the moment the target looks hit, so nobody can trade on a known outcome",
+        "while the resolver confirms it. The lock time is kept in resolved_ts while Locked."
       ],
       "discriminator": [
         107,
@@ -1151,11 +1401,11 @@
     {
       "name": "resolve_market",
       "docs": [
-        "Admin sets the outcome. result: 1 yes, 2 no, 3 void.",
+        "Sets the outcome. result: 1..=outcome_count, or 4 to void.",
         "After the deadline: from Open or Locked, any result.",
-        "Before the deadline: only Yes (target hit), and only from Locked, so betting is already frozen.",
-        "No and Void need the deadline to pass (No means the target was not hit in time).",
-        "final_value is the value the admin read off chain, stored for the public resolution record."
+        "Before the deadline: only from Locked (trading already frozen). In a 2 outcome market only",
+        "Yes can resolve early, since No means the target was not hit in time.",
+        "final_value is the value the resolver read off chain, stored for the public record."
       ],
       "discriminator": [
         155,
@@ -1435,6 +1685,62 @@
       ]
     },
     {
+      "name": "set_creation",
+      "docs": [
+        "Staged rollout switches. open_creation: user created markets go live without approval.",
+        "creator_fee_share_bps: share of each market's platform fee paid to its creator (0 to 10000,",
+        "copied into each market at creation). Markets the admin creates never pay a creator share."
+      ],
+      "discriminator": [
+        241,
+        117,
+        73,
+        196,
+        152,
+        102,
+        204,
+        193
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "open_creation",
+          "type": "bool"
+        },
+        {
+          "name": "creator_fee_share_bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
       "name": "set_curve",
       "docs": [
         "Price curve for new markets: starting share price (USDC base units) and depth",
@@ -1493,8 +1799,7 @@
       "name": "set_limits",
       "docs": [
         "min_bet is the smallest buy, max_bet the most a wallet can have in one market (cost basis).",
-        "Limits apply to new trades. Fee and dispute window apply to new markets only: a market keeps the",
-        "fee and dispute window it was created with."
+        "Limits apply to new trades. Fee and dispute window apply to new markets only."
       ],
       "discriminator": [
         207,
@@ -1680,9 +1985,82 @@
       ]
     },
     {
+      "name": "set_verified",
+      "docs": [
+        "Admin marks a market as Verified (official, promoted) or removes the badge. Display only."
+      ],
+      "discriminator": [
+        1,
+        156,
+        246,
+        244,
+        116,
+        25,
+        45,
+        152
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.id",
+                "account": "Market"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "verified",
+          "type": "bool"
+        }
+      ]
+    },
+    {
       "name": "settle_dispute",
       "docs": [
-        "Admin decides a dispute: 1 yes, 2 no, 3 void. Payouts open right away after."
+        "Admin decides a dispute: 1..=outcome_count, or 4 to void. Payouts open right away after."
       ],
       "discriminator": [
         155,
@@ -1755,7 +2133,7 @@
     {
       "name": "unlock_market",
       "docs": [
-        "False alarm: reopen betting. Only before the deadline."
+        "False alarm: reopen trading. Only before the deadline."
       ],
       "discriminator": [
         1,
@@ -1841,8 +2219,8 @@
     {
       "name": "void_market",
       "docs": [
-        "Admin can cancel an open or locked market at any time, for example a rugged token or manipulation.",
-        "Everyone is refunded."
+        "Admin can cancel an open or locked market at any time, for example a rugged token or",
+        "manipulation. Everyone is refunded."
       ],
       "discriminator": [
         243,
@@ -1936,6 +2314,19 @@
       ]
     },
     {
+      "name": "MarketBonus",
+      "discriminator": [
+        250,
+        255,
+        90,
+        28,
+        255,
+        240,
+        225,
+        95
+      ]
+    },
+    {
       "name": "Position",
       "discriminator": [
         170,
@@ -1964,6 +2355,19 @@
   ],
   "events": [
     {
+      "name": "BonusAdded",
+      "discriminator": [
+        75,
+        179,
+        192,
+        153,
+        203,
+        165,
+        127,
+        68
+      ]
+    },
+    {
       "name": "Claimed",
       "discriminator": [
         217,
@@ -1974,6 +2378,32 @@
         150,
         248,
         33
+      ]
+    },
+    {
+      "name": "CreatorFeePaid",
+      "discriminator": [
+        36,
+        117,
+        238,
+        149,
+        171,
+        120,
+        200,
+        131
+      ]
+    },
+    {
+      "name": "FeesCollected",
+      "discriminator": [
+        233,
+        23,
+        117,
+        225,
+        107,
+        178,
+        254,
+        8
       ]
     },
     {
@@ -2079,7 +2509,7 @@
     {
       "code": 6004,
       "name": "BadSide",
-      "msg": "Side must be 1 (yes) or 2 (no)"
+      "msg": "That outcome does not exist in this market"
     },
     {
       "code": 6005,
@@ -2104,7 +2534,7 @@
     {
       "code": 6009,
       "name": "OtherSide",
-      "msg": "You hold shares on the other side of this market. Sell them first"
+      "msg": "You hold shares of another outcome in this market. Sell them first"
     },
     {
       "code": 6010,
@@ -2153,6 +2583,30 @@
     }
   ],
   "types": [
+    {
+      "name": "BonusAdded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "funder",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "total_bonus",
+            "type": "u64"
+          }
+        ]
+      }
+    },
     {
       "name": "Claimed",
       "type": {
@@ -2231,6 +2685,60 @@
               "Share units bought per 1 base unit of price rise, for new markets."
             ],
             "type": "u64"
+          },
+          {
+            "name": "open_creation",
+            "docs": [
+              "When true, markets created by anyone go live without admin approval."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "creator_fee_share_bps",
+            "docs": [
+              "Share of each new user created market's platform fee paid to its creator, in bps of the fee."
+            ],
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatorFeePaid",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeesCollected",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "platform",
+            "type": "u64"
+          },
+          {
+            "name": "creator",
+            "type": "u64"
           }
         ]
       }
@@ -2286,29 +2794,41 @@
           },
           {
             "name": "result",
+            "docs": [
+              "Winning outcome (1..=outcome_count) once Resolved, 0 before."
+            ],
             "type": "u8"
           },
           {
-            "name": "yes_reserve",
+            "name": "outcome_count",
             "docs": [
-              "USDC held for each side: bought in minus sold out, plus sell fees kept in the pot."
+              "2 (Yes, No) or 3."
             ],
-            "type": "u64"
+            "type": "u8"
           },
           {
-            "name": "no_reserve",
-            "type": "u64"
-          },
-          {
-            "name": "yes_shares",
+            "name": "reserves",
             "docs": [
-              "Share supply per side (share units, 1_000_000 per share)."
+              "USDC held for each outcome: bought in minus sold out, plus sell fees and bonus. Unused slots are 0."
             ],
-            "type": "u64"
+            "type": {
+              "array": [
+                "u64",
+                3
+              ]
+            }
           },
           {
-            "name": "no_shares",
-            "type": "u64"
+            "name": "shares",
+            "docs": [
+              "Share supply per outcome (share units, 1_000_000 per share)."
+            ],
+            "type": {
+              "array": [
+                "u64",
+                3
+              ]
+            }
           },
           {
             "name": "curve_base",
@@ -2324,6 +2844,24 @@
           {
             "name": "fee_bps",
             "type": "u16"
+          },
+          {
+            "name": "creator_fee_bps",
+            "docs": [
+              "Creator's share of the platform fee, in bps of the fee, copied at creation (0 for admin markets)."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "creator_fee_owed",
+            "docs": [
+              "Creator share set aside by collect_fees, paid by claim_creator_fee."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "creator_fee_paid",
+            "type": "bool"
           },
           {
             "name": "dispute_secs",
@@ -2352,6 +2890,25 @@
             "type": "bool"
           },
           {
+            "name": "verified",
+            "docs": [
+              "Official market badge. True for markets the admin created, admin can change it."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "rules_hash",
+            "docs": [
+              "sha256 of the market's full rules text, fixed at creation."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
             "name": "final_value",
             "type": "u64"
           },
@@ -2361,6 +2918,30 @@
           },
           {
             "name": "vault_bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketBonus",
+      "docs": [
+        "Running total of bonus USDC added to one market, PDA [\"bonus\", market]. Informational: payouts",
+        "already include the bonus through the reserves. Lets the app show it and exclude it from odds."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "total",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
             "type": "u8"
           }
         ]
@@ -2390,6 +2971,27 @@
           {
             "name": "end_ts",
             "type": "i64"
+          },
+          {
+            "name": "outcome_count",
+            "type": "u8"
+          },
+          {
+            "name": "verified",
+            "type": "bool"
+          },
+          {
+            "name": "pending",
+            "type": "bool"
+          },
+          {
+            "name": "rules_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
           }
         ]
       }
@@ -2487,6 +3089,9 @@
           },
           {
             "name": "side",
+            "docs": [
+              "Outcome held, 1..=outcome_count."
+            ],
             "type": "u8"
           },
           {
@@ -2581,31 +3186,34 @@
             "type": "u64"
           },
           {
-            "name": "yes_reserve",
-            "type": "u64"
+            "name": "reserves",
+            "type": {
+              "array": [
+                "u64",
+                3
+              ]
+            }
           },
           {
-            "name": "no_reserve",
-            "type": "u64"
+            "name": "supplies",
+            "type": {
+              "array": [
+                "u64",
+                3
+              ]
+            }
           },
           {
-            "name": "yes_shares",
-            "type": "u64"
-          },
-          {
-            "name": "no_shares",
-            "type": "u64"
-          },
-          {
-            "name": "yes_price",
+            "name": "prices",
             "docs": [
-              "Spot price after the trade, USDC base units per whole share"
+              "Spot price per outcome after the trade, USDC base units per whole share (0 for unused slots)"
             ],
-            "type": "u64"
-          },
-          {
-            "name": "no_price",
-            "type": "u64"
+            "type": {
+              "array": [
+                "u64",
+                3
+              ]
+            }
           }
         ]
       }
