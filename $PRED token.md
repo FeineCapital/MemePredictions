@@ -1,4 +1,4 @@
-# Meme Coin Predictions token information
+# MemePredictions token information
 
 - **Name:** MemePredictions
 - **Ticker:** $PRED
