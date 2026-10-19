@@ -26,7 +26,7 @@ The version 1 pool program (`EaYBtMWdemH7szKjdtiti6iLgRi6HDTdqpsyk7qDwh49`) was 
 Latest upgrade (2026-10-18): automatic payouts (`claim_for`). Production build md5 `e9dc38193ac9a249d613e74f2c4dc862`, verified byte for byte against the program account. On chain IDL: `5e9bfNwLkJBJFH2aSVRUrbCPtfvDrEL7Msy6utnTovfe`.
 
 ## $PRED token (mainnet)
-MemePredictions' project token, launched on pump.fun on 2026-10-18.
+$PRED is the official MemePredictions platform token. Creator rewards from $PRED are used to seed new memecoin prediction markets and to maintain and grow the platform. Launched on pump.fun on 2026-10-18.
 
 | Field | Value |
 |---|---|
@@ -37,6 +37,4 @@ MemePredictions' project token, launched on pump.fun on 2026-10-18.
 | Mint authority | None (revoked, no more can be minted) |
 | Freeze authority | None (no wallet can be frozen) |
 
-- Creator fees from the token go toward seeding new prediction markets.
-- $PRED is separate from this program. Markets are traded and paid out in USDC only; the program never touches $PRED.
 - Links: [pump.fun](https://pump.fun/coin/AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump), [Solscan](https://solscan.io/token/AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump). Always check the contract address above before buying; anyone can make a token with the same name.

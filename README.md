@@ -4,7 +4,7 @@ Anchor program (Solana) for yes or no prediction markets on memecoins, traded as
 
 Version 2 (share trading). The version 1 pool design is archived in `archive/v1-pool/`.
 
-Project token: $PRED, contract address `AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump`. Details in DEPLOYED.md. Markets use USDC only, not $PRED.
+$PRED is the official MemePredictions platform token. Creator rewards from $PRED are used to seed new memecoin prediction markets and to maintain and grow the platform. Contract address: `AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump`. Details in DEPLOYED.md.
 
 ## How a market works
 1. Anyone proposes a market ("will token X reach a $5M market cap by Friday?") and buys the first shares. The market waits in Pending until the admin approves it.
