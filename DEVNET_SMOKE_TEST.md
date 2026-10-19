@@ -210,3 +210,45 @@ Market `1RsA8a12Yfc5vDzfsUWZpSQ1Kdw4gPfSvGo3LBteUfk`. The admin wallet bought Ye
 | auto_redirect_to_caller_wallet | ConstraintTokenOwner | failed as expected | [3NYDeeLf...](https://solscan.io/tx/3NYDeeLf9mLXuFTPH5Thidz3XPUyufpH5QFPRNdZoS7mT9QFaYy8LMfT99vcivmVfCc8ER9JcC8DubH9jPysZoNk?cluster=devnet) |
 | auto_pay_twice | AlreadyClaimed | failed as expected | [9hXQhGBr...](https://solscan.io/tx/9hXQhGBr4uw479TgLQCbLaVnnszvzj5ndQXm5FKr6LpUmbYxtQyuNFzNVLTDwibAnazyTemffe9pj44b2upofpp?cluster=devnet) |
 | auto_then_manual_claim | AlreadyClaimed | failed as expected | [RiV9ykdj...](https://solscan.io/tx/RiV9ykdjezc7HQgYiryuzjS6Mtio4488CH8wP9s3psiJkyQuJt5qPUa96M47LkodXCjynAhns5RPVY7xHAqEp6f?cluster=devnet) |
+
+# Version 3 live run (3 outcomes, open creation, creator fee, bonus, automatic payouts)
+
+Program `BGCcEd1X76oZ2yF9nRoun2gGGLJC3D59Z2XEJNJ6KmhZ`, production build md5 `784f86c4096d25a7a707a7c4b11ab455`.
+
+- Market A `5X4TUVQ8v45KGT1fQmKsux4v9wTdhCkfWpoNegZjzLTL`: created by the admin with 3 outcomes, so it opened instantly and Verified (open verified=true creatorShare=0). 5 USDC on each outcome plus a 3 USDC bonus from a treasury wallet. The resolver locked it and resolved outcome 3 early. Automatic payouts: outcome 3 holder 17.820000 USDC, the others 0. Platform fee 0.180000, vault left 0.000000.
+- Market B `FPcQgfdCNEw4YDQMs3tVBtKJax9FRyE5pKU6Xyho9AWA`: created by a user while open creation was on with a 50% creator share (open verified=false creatorShare=5000). Resolved Yes early. Winner 9.900000 USDC, loser 0. Fee split: platform 0.050000, creator 0.050000 (paid to the creator's own account; paying it anywhere else was rejected). Vault left 0.000000.
+
+| Step | Signature |
+|---|---|
+| initialize | [2kbbxwfh...](https://solscan.io/tx/2kbbxwfhsDiRFWPcoQo1WDk7x3KRrfS1Ryk4p61uQGa9wUjmWLzPdWKfGcpRcbmKntedaxsuzNsrE4R2pST6ZA2w?cluster=devnet) |
+| set_resolver | [3yWa9vRT...](https://solscan.io/tx/3yWa9vRTrVFprdKEjSaHhwQb7r7v68E4n3Mh1ZDB4uXim4CSLw3Shk6dn3pY73hqBJ1SMX6twTQMyTymKodw7Ax5?cluster=devnet) |
+| set_admin | [4M8Pmhah...](https://solscan.io/tx/4M8PmhahBiVbD3S8mnV5iBFmrZ4adw5VQZxDDYkbQtvvGHBisqPwGXfmkEh9T99YYVUg7r7CCzYtyRmbJXQUrK8p?cluster=devnet) |
+| fund_sol | [2bRMHZSC...](https://solscan.io/tx/2bRMHZSCUWbEuZ6KYxvBR92ge4ddwEmQCrDuYZsc8MhDdoqzeGxBXSGiqdqDdKDmyBxBJyVwB2Xse5P9FayR8uSy?cluster=devnet) |
+| fund_usdc_bettor1 | [47bMCJHw...](https://solscan.io/tx/47bMCJHwv38pgbPx5V5XTxZAWxZzsiJ3mMWh3Hz61iRx4skcb1Xe2UHGMuKEbV7mnKknsgZNSPXUKroM11AHuzFN?cluster=devnet) |
+| fund_usdc_bettor2 | [3UDRGVvP...](https://solscan.io/tx/3UDRGVvPphvJk3WnKiuB4qyoA2irxb1zqJd9SoqacruUyr2Bn55mwRxK1ik2xTJZ22fgMVhuh5Hes83tWMeNPRKm?cluster=devnet) |
+| a_admin_create_3_outcomes | [2xDSWVk9...](https://solscan.io/tx/2xDSWVk94Loe4c3qJ4FSiKpTDH5pmaRzXeH4VLZeYkS3wFojsG4ZKCoweHFNbfnYWU5NhYhX25NJW56CUWNFZ4Dg?cluster=devnet) |
+| a_bettor1_buy_outcome2 | [5AE6LJtd...](https://solscan.io/tx/5AE6LJtdp6QUagTnsS45dMWwCH4f8Ltq6tZprZyADWLk69uczfFqvLZkV1D2Ks2NG9jxY1fpFHfZrRgd3bmBadPr?cluster=devnet) |
+| a_bettor2_buy_outcome3 | [2jsUSeQV...](https://solscan.io/tx/2jsUSeQVXtNMxdpj44xvMhAmhcN6wYL8JWZvVXBXgMCKagNFhcPjebiTGV3zwbj16BJ3KXJi5ESqvEghET6ZWvXd?cluster=devnet) |
+| fund_treasury_usdc | [3j6Wh826...](https://solscan.io/tx/3j6Wh826uY55VFXPXe6xU8m4MG8gcB3hJzofcdMuDzWZoVdo1wWZDURQPrxm8qLmUeJsoQLvQk7uw4TufPp8A5SM?cluster=devnet) |
+| a_treasury_bonus_3 | [5Bedj1hB...](https://solscan.io/tx/5Bedj1hBcCHYRx4kDryhLMaJJq3XozQEPqr9NZ3JNwdAyxRyYRxBZjr1e1dH5KJKPmQU1teCodiJTfatQvo2h6eh?cluster=devnet) |
+| a_resolver_lock | [3nyeSRUL...](https://solscan.io/tx/3nyeSRUL35Sh5dsKvxPs1vD89T4ULhAGuupNQw9xLWy1hg74yFypvbYEkowAjo2jPMjKqWMLwRzuCrHjP4pYzTib?cluster=devnet) |
+| a_resolver_resolve_outcome3_early | [4csz9bY9...](https://solscan.io/tx/4csz9bY9bHTs2CGP8Nq3HiUkU6Na8TtBbLjVCsJxhsazjqbNJr9RsvahbXkpPV6BJtGSVK8rgk2L8mgSmyjya34c?cluster=devnet) |
+| b_set_creation_open_50pct | [bsYc7VpL...](https://solscan.io/tx/bsYc7VpLQACHCK18PtncNcxUZKM9az7jUKqEkXj94TmwNxJj7MLHS4ECmZTqerqNJqDQFyuEr3v9itVU1JaBBq2?cluster=devnet) |
+| b_user_create_2_outcomes | [eAN9PbZW...](https://solscan.io/tx/eAN9PbZWFj7w5sgYRZHpS1C75hYKyNJBVomGBmvxrY4qRzPXQeCWyz6Pd5gzzsHK6XCcxDxMJBGq52onpmfgm3t?cluster=devnet) |
+| b_bettor2_buy_no | [4CRteDpc...](https://solscan.io/tx/4CRteDpcmBRxrhcARpVw53AoG3SXYwhZvuiTCi3sptT7vMgZ8wEEsczGbtCTdcrvJ2P2gSXssifGPLF1TA4ZXnq6?cluster=devnet) |
+| b_set_creation_closed | [2iozVBXC...](https://solscan.io/tx/2iozVBXCLiUk3y8CcXBMpLHBUfmXfgEWDDoKd3CGfkEBMprhQscJnHrekhjCfgdFCqDAsxP7MmQf7rVpcwWQr3RX?cluster=devnet) |
+| b_resolver_lock | [ehTak758...](https://solscan.io/tx/ehTak758rZwRkwW4QZ4Dgy2j9y27pUHX7mrYCX1iUgh5CU9dPc58UpXyVWY3F6f5MoygNceTkBR69ojdD5W8yD5?cluster=devnet) |
+| b_resolver_resolve_yes_early | [2umZozLN...](https://solscan.io/tx/2umZozLNeXt3Jji4JZQdVPua7RdjFugKEtYUpvsmUaEC46C6PFqcPiz6JkFEyavAFCH5uiAzbE4PvUtyBrSUdMY9?cluster=devnet) |
+| a_auto_pay_7TPu | [4zytixEq...](https://solscan.io/tx/4zytixEq1Z87ZMeM22fG4nE2YSyvsj351RnvgcHUCDGgP8H6DGJuhToNFffb7tRFksT2iKktjcUtYEtw6o3ZfACJ?cluster=devnet) |
+| a_auto_pay_HvVa | [4KNqujrH...](https://solscan.io/tx/4KNqujrH7rvKHWY1qraBuab87QuNwy32jRC54oZwEMV8izyBqYqV3apsSQUCZQNGk2TZ4z23m2Tv1u18v7LL7qnH?cluster=devnet) |
+| a_auto_pay_Eddh | [pLpX1Nwu...](https://solscan.io/tx/pLpX1NwuQZowYzb4CKU6n3bJuQ6qH7zbHhkzN7fynotSUJ6vd8z6BDE71qPCoYhZkxepvMGUH5j5okvR3tvgwCd?cluster=devnet) |
+| a_collect_fees | [547V9fmW...](https://solscan.io/tx/547V9fmW824qVFdbhiQiX7LMhtX2UoHQ1yvCUfniYxL9sMEyWM9rzbPfo3k1jBzHEzn6uCWBp7DzFs6feB63ZL5m?cluster=devnet) |
+| b_auto_pay_HvVa | [2rRpTAJZ...](https://solscan.io/tx/2rRpTAJZo1Zi5n58JuL9pncB5zbpzPWCRa4Uw9BgXxqfMvLrSoLZTMbFQ6PxjKesuQo6VboyE7zbBtR2SUbfWJQ7?cluster=devnet) |
+| b_auto_pay_Eddh | [3zsBFtFr...](https://solscan.io/tx/3zsBFtFrdQTw15f6tht4FUBCSeLVVd7WzBpbQU5bF7gZQJphfzEpfCYLZvLtw2PTjYDDTP8MfSHMDPHPeaQjG71L?cluster=devnet) |
+| b_collect_fees | [2aebvp18...](https://solscan.io/tx/2aebvp18hfHcfM2iCSXfBAydj7Lf6X5FTgD27Cm4LfUDrxDumngPo14NtiKEQNLTNzhtm6FD7JF8qcGnwVQqvjGS?cluster=devnet) |
+| b_creator_fee_paid | [5vbujJbW...](https://solscan.io/tx/5vbujJbWWH675888CCx6YryQ672oHFXUH87BTJkDcUqCJwaP6J1pTA5xSfGMVRRfUgZsGPnrvjupAng3r5ywoXfV?cluster=devnet) |
+
+| Must fail | Expected | Result | Signature |
+|---|---|---|---|
+| a_buy_outcome4 | BadSide | failed as expected | [64ojUeSa...](https://solscan.io/tx/64ojUeSaKLGHSNGfy3yikkDCneEdodyEYwgB6xaFjXpCFR8b89MbDaQRiyd24dmJbx8WpJsRxYnKovaeegBkhcp6?cluster=devnet) |
+| b_creator_fee_to_wrong_wallet | ConstraintTokenOwner | failed as expected | [2GpQMjHU...](https://solscan.io/tx/2GpQMjHUmCUn9nqbDySURWG35sYC39sS25bRRRUgNy1QU8qH64NzYo9uYUg5mTae5mP6dnmfcg4h57nZ1GJ6f4Xt?cluster=devnet) |

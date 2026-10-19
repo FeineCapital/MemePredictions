@@ -3,9 +3,60 @@
     "initialize": "2kbbxwfhsDiRFWPcoQo1WDk7x3KRrfS1Ryk4p61uQGa9wUjmWLzPdWKfGcpRcbmKntedaxsuzNsrE4R2pST6ZA2w",
     "set_resolver": "3yWa9vRTrVFprdKEjSaHhwQb7r7v68E4n3Mh1ZDB4uXim4CSLw3Shk6dn3pY73hqBJ1SMX6twTQMyTymKodw7Ax5",
     "set_admin": "4M8PmhahBiVbD3S8mnV5iBFmrZ4adw5VQZxDDYkbQtvvGHBisqPwGXfmkEh9T99YYVUg7r7CCzYtyRmbJXQUrK8p",
-    "fund_sol": "4xUHKTX6qNCrwRLQQ74SFJvM1bdMWMtabzvVLNVRMaSGQtCDkHeKkXYM3jGb9bgLbZh17bdVqWV9rXnkwyNLrjKQ",
-    "fund_usdc_bettor1": "47bMCJHwv38pgbPx5V5XTxZAWxZzsiJ3mMWh3Hz61iRx4skcb1Xe2UHGMuKEbV7mnKknsgZNSPXUKroM11AHuzFN"
+    "fund_sol": "2bRMHZSCUWbEuZ6KYxvBR92ge4ddwEmQCrDuYZsc8MhDdoqzeGxBXSGiqdqDdKDmyBxBJyVwB2Xse5P9FayR8uSy",
+    "fund_usdc_bettor1": "47bMCJHwv38pgbPx5V5XTxZAWxZzsiJ3mMWh3Hz61iRx4skcb1Xe2UHGMuKEbV7mnKknsgZNSPXUKroM11AHuzFN",
+    "fund_usdc_bettor2": "3UDRGVvPphvJk3WnKiuB4qyoA2irxb1zqJd9SoqacruUyr2Bn55mwRxK1ik2xTJZ22fgMVhuh5Hes83tWMeNPRKm",
+    "a_admin_create_3_outcomes": "2xDSWVk94Loe4c3qJ4FSiKpTDH5pmaRzXeH4VLZeYkS3wFojsG4ZKCoweHFNbfnYWU5NhYhX25NJW56CUWNFZ4Dg",
+    "a_bettor1_buy_outcome2": "5AE6LJtdp6QUagTnsS45dMWwCH4f8Ltq6tZprZyADWLk69uczfFqvLZkV1D2Ks2NG9jxY1fpFHfZrRgd3bmBadPr",
+    "a_bettor2_buy_outcome3": "2jsUSeQVXtNMxdpj44xvMhAmhcN6wYL8JWZvVXBXgMCKagNFhcPjebiTGV3zwbj16BJ3KXJi5ESqvEghET6ZWvXd",
+    "fund_treasury_usdc": "3j6Wh826uY55VFXPXe6xU8m4MG8gcB3hJzofcdMuDzWZoVdo1wWZDURQPrxm8qLmUeJsoQLvQk7uw4TufPp8A5SM",
+    "a_treasury_bonus_3": "5Bedj1hBcCHYRx4kDryhLMaJJq3XozQEPqr9NZ3JNwdAyxRyYRxBZjr1e1dH5KJKPmQU1teCodiJTfatQvo2h6eh",
+    "a_resolver_lock": "3nyeSRUL35Sh5dsKvxPs1vD89T4ULhAGuupNQw9xLWy1hg74yFypvbYEkowAjo2jPMjKqWMLwRzuCrHjP4pYzTib",
+    "a_resolver_resolve_outcome3_early": "4csz9bY9bHTs2CGP8Nq3HiUkU6Na8TtBbLjVCsJxhsazjqbNJr9RsvahbXkpPV6BJtGSVK8rgk2L8mgSmyjya34c",
+    "b_set_creation_open_50pct": "bsYc7VpLQACHCK18PtncNcxUZKM9az7jUKqEkXj94TmwNxJj7MLHS4ECmZTqerqNJqDQFyuEr3v9itVU1JaBBq2",
+    "b_user_create_2_outcomes": "eAN9PbZWFj7w5sgYRZHpS1C75hYKyNJBVomGBmvxrY4qRzPXQeCWyz6Pd5gzzsHK6XCcxDxMJBGq52onpmfgm3t",
+    "b_bettor2_buy_no": "4CRteDpcmBRxrhcARpVw53AoG3SXYwhZvuiTCi3sptT7vMgZ8wEEsczGbtCTdcrvJ2P2gSXssifGPLF1TA4ZXnq6",
+    "b_set_creation_closed": "2iozVBXCLiUk3y8CcXBMpLHBUfmXfgEWDDoKd3CGfkEBMprhQscJnHrekhjCfgdFCqDAsxP7MmQf7rVpcwWQr3RX",
+    "b_resolver_lock": "ehTak758rZwRkwW4QZ4Dgy2j9y27pUHX7mrYCX1iUgh5CU9dPc58UpXyVWY3F6f5MoygNceTkBR69ojdD5W8yD5",
+    "b_resolver_resolve_yes_early": "2umZozLNeXt3Jji4JZQdVPua7RdjFugKEtYUpvsmUaEC46C6PFqcPiz6JkFEyavAFCH5uiAzbE4PvUtyBrSUdMY9",
+    "a_auto_pay_7TPu": "4zytixEq1Z87ZMeM22fG4nE2YSyvsj351RnvgcHUCDGgP8H6DGJuhToNFffb7tRFksT2iKktjcUtYEtw6o3ZfACJ",
+    "a_auto_pay_HvVa": "4KNqujrH7rvKHWY1qraBuab87QuNwy32jRC54oZwEMV8izyBqYqV3apsSQUCZQNGk2TZ4z23m2Tv1u18v7LL7qnH",
+    "a_auto_pay_Eddh": "pLpX1NwuQZowYzb4CKU6n3bJuQ6qH7zbHhkzN7fynotSUJ6vd8z6BDE71qPCoYhZkxepvMGUH5j5okvR3tvgwCd",
+    "a_collect_fees": "547V9fmW824qVFdbhiQiX7LMhtX2UoHQ1yvCUfniYxL9sMEyWM9rzbPfo3k1jBzHEzn6uCWBp7DzFs6feB63ZL5m",
+    "b_auto_pay_HvVa": "2rRpTAJZo1Zi5n58JuL9pncB5zbpzPWCRa4Uw9BgXxqfMvLrSoLZTMbFQ6PxjKesuQo6VboyE7zbBtR2SUbfWJQ7",
+    "b_auto_pay_Eddh": "3zsBFtFrdQTw15f6tht4FUBCSeLVVd7WzBpbQU5bF7gZQJphfzEpfCYLZvLtw2PTjYDDTP8MfSHMDPHPeaQjG71L",
+    "b_collect_fees": "2aebvp18hfHcfM2iCSXfBAydj7Lf6X5FTgD27Cm4LfUDrxDumngPo14NtiKEQNLTNzhtm6FD7JF8qcGnwVQqvjGS",
+    "b_creator_fee_paid": "5vbujJbWWH675888CCx6YryQ672oHFXUH87BTJkDcUqCJwaP6J1pTA5xSfGMVRRfUgZsGPnrvjupAng3r5ywoXfV"
   },
-  "mustFail": {},
-  "notes": {}
+  "mustFail": {
+    "a_buy_outcome4": {
+      "sig": "64ojUeSaKLGHSNGfy3yikkDCneEdodyEYwgB6xaFjXpCFR8b89MbDaQRiyd24dmJbx8WpJsRxYnKovaeegBkhcp6",
+      "expected": "BadSide",
+      "pass": true
+    },
+    "b_creator_fee_to_wrong_wallet": {
+      "sig": "2GpQMjHUmCUn9nqbDySURWG35sYC39sS25bRRRUgNy1QU8qH64NzYo9uYUg5mTae5mP6dnmfcg4h57nZ1GJ6f4Xt",
+      "expected": "ConstraintTokenOwner",
+      "pass": true
+    }
+  },
+  "notes": {
+    "a_status_verified_share": "open verified=true creatorShare=0",
+    "b_status_verified_share": "open verified=false creatorShare=5000",
+    "a_paid_7TPu": "0.000000",
+    "a_paid_HvVa": "0.000000",
+    "a_paid_Eddh": "17.820000",
+    "a_platform_fee": "0.180000",
+    "a_creator_fee_owed": "0.000000",
+    "a_vault_left": "0.000000",
+    "b_paid_HvVa": "9.900000",
+    "b_paid_Eddh": "0.000000",
+    "b_platform_fee": "0.050000",
+    "b_creator_fee_owed": "0.050000",
+    "b_creator_received": "0.050000",
+    "b_vault_left": "0.000000"
+  },
+  "marketA": "5X4TUVQ8v45KGT1fQmKsux4v9wTdhCkfWpoNegZjzLTL",
+  "marketB": "FPcQgfdCNEw4YDQMs3tVBtKJax9FRyE5pKU6Xyho9AWA",
+  "payAfter": 1792394531
 }

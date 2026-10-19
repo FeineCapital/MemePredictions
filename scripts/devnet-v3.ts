@@ -4,7 +4,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN, Program } from "@coral-xyz/anchor";
 import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, Transaction } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID, getAccount, getAssociatedTokenAddressSync, transfer } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID, getAccount, getAssociatedTokenAddressSync, getOrCreateAssociatedTokenAccount, transfer } from "@solana/spl-token";
 import { createHash } from "crypto";
 import fs from "fs";
 import os from "os";
@@ -109,16 +109,14 @@ async function main() {
     record("a_bettor1_buy_outcome2", await as(bettor1).methods.buyShares(2, new BN(5 * U), new BN(0)).accountsPartial(trade(bettor1, a.market)).rpc());
     record("a_bettor2_buy_outcome3", await as(bettor2).methods.buyShares(3, new BN(5 * U), new BN(0)).accountsPartial(trade(bettor2, a.market)).rpc());
     await mustFail("a_buy_outcome4", program.methods.buyShares(4, new BN(5 * U), new BN(0)).accountsPartial(trade(bettor1, a.market)), [bettor1], "BadSide");
+    // The devnet deployer plays the treasury: give it 3 test USDC, then it funds a bonus without taking a side.
+    const treasuryUsdc = (await getOrCreateAssociatedTokenAccount(conn, deployer, USDC, deployer.publicKey)).address;
+    if ((await getAccount(conn, treasuryUsdc)).amount < 3n * BigInt(U)) {
+      record("fund_treasury_usdc", await transfer(conn, admin, usdcOf(admin.publicKey), treasuryUsdc, admin, 3 * U));
+    }
     record("a_treasury_bonus_3", await as(deployer).methods.addBonus(new BN(3 * U))
       .accountsPartial({ funder: deployer.publicKey, config: configPda, market: a.market, vault: vaultPda(a.market), bonus: bonusPda(a.market),
-        funderUsdc: usdcOf(deployer.publicKey), tokenProgram: TOKEN_PROGRAM_ID, systemProgram: SystemProgram.programId }).rpc()
-      .catch(async () => {
-        // the devnet deployer may hold no test USDC; fund it from the admin wallet and retry
-        await transfer(conn, admin, usdcOf(admin.publicKey), (await anchor.utils.token.associatedAddress({ mint: USDC, owner: deployer.publicKey })), admin, 3 * U).catch(() => {});
-        return as(deployer).methods.addBonus(new BN(3 * U))
-          .accountsPartial({ funder: deployer.publicKey, config: configPda, market: a.market, vault: vaultPda(a.market), bonus: bonusPda(a.market),
-            funderUsdc: usdcOf(deployer.publicKey), tokenProgram: TOKEN_PROGRAM_ID, systemProgram: SystemProgram.programId }).rpc();
-      }));
+        funderUsdc: treasuryUsdc, tokenProgram: TOKEN_PROGRAM_ID, systemProgram: SystemProgram.programId }).rpc());
     record("a_resolver_lock", await as(resolver).methods.lockMarket().accountsPartial(ra(a.market)).rpc());
     record("a_resolver_resolve_outcome3_early", await as(resolver).methods.resolveMarket(3, new BN(10_000_000)).accountsPartial(ra(a.market)).rpc());
     state.marketA = a.market.toBase58();
