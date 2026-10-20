@@ -6,7 +6,7 @@
 
 ## Program deployment
 
-Version 3 (2 or 3 outcomes, creator fees, Verified badge, open creation switch, rules hash, bonus pot, automatic payouts). Devnet.
+Version 3 (2 or 3 outcomes, creator fees, Verified badge, open creation switch, rules hash, market seeds, automatic payouts). Devnet.
 
 | Field | Value |
 |---|---|
