@@ -62,7 +62,7 @@ Rounding dust (a few base units per market) remains in each vault, and market, v
 ### I-5: trust assumptions
 - The admin decides outcomes. A compromised admin can resolve wrongly. The dispute window plus a Squads multisig admin are the mitigations.
 - Circle USDC has a freeze authority. If Circle froze a vault, that market's funds would be stuck. Outside the program's control.
-- The program is upgradeable. Whoever holds the upgrade authority can replace the code, which overrides every guarantee above. See DEPLOYED.md.
+- The program is upgradeable. Whoever holds the upgrade authority can replace the code, which overrides every guarantee above. See [$PRED token.md](%24PRED%20token.md).
 
 ### I-6: one step admin transfer
 A typo in `set_admin` hands control to a wrong key. L-1 blocks the zero key only. Moving to a Squads multisig once, carefully, is the plan. A two step propose and accept would be safer if admin changes become routine.
@@ -125,5 +125,5 @@ New program (account layouts changed). What changed and how it was checked:
 
 ## Testing
 - `cargo test`: 15 unit tests pass (v3) (curve math, rounding, solvency, payouts, refunds, sweeps, overflow bounds).
-- `anchor test --skip-build` on the short-time test build (`./scripts/build.sh test`): 24 integration test groups pass on v3, each with many checks. Every instruction is covered. Every buy, sell, claim and fee amount is checked against an independent bigint copy of the math. Vault solvency is asserted after every step, and total withdrawn plus fees never exceed total deposited.
+- `anchor test --skip-build` on the short-time test build (`./scripts/build.sh test`): 25 integration test groups pass on v3, each with many checks. Every instruction is covered. Every buy, sell, claim and fee amount is checked against an independent bigint copy of the math. Vault solvency is asserted after every step, and total withdrawn plus fees never exceed total deposited.
 - The short-time build only changes `MIN_DURATION` (2 s) and `EMERGENCY_DELAY` (6 s) behind the `short-time` cargo feature. The deployed binary is built without it.

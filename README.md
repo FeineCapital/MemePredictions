@@ -8,7 +8,7 @@ Version 3: 2 or 3 outcomes, open creation switch, Verified badge, creator fee sh
 
 **Token:** MemePredictions ($PRED), CA `AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump`.
 
-$PRED is the official MemePredictions platform token. Creator rewards from $PRED are used to seed new memecoin prediction markets and to maintain and grow the platform. Contract address: `AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump`. Details in DEPLOYED.md.
+$PRED is the official MemePredictions platform token. Creator rewards from $PRED are used to seed new memecoin prediction markets and to maintain and grow the platform. Contract address: `AwEvmmmsW26hSrcUcDxUbxyoybyireqTDYYxHhCpump`. Details in [$PRED token.md](%24PRED%20token.md).
 
 ## How a market works
 1. Anyone creates a market ("will token X reach a $5M market cap by Friday?", or up to 3 outcomes like "which coin hits $10M first: A, B or C?"). The creator's seed is split evenly across the outcomes and is not a bet, so every market starts at even odds. The creator and the admin can never buy shares, so nobody gets an early position. Admin markets go live instantly with a Verified badge. User markets wait for approval unless the admin has turned on open creation.
@@ -59,7 +59,7 @@ Admin or resolver:
 ## Status
 - See SECURITY_REVIEW.md for the internal review, fixes and residual risks.
 - Build: `./scripts/build.sh` (platform tools v1.52). Test build: `./scripts/build.sh test`, then `anchor test --skip-build`.
-- 15 unit tests and 24 integration test groups pass on a local validator. Live devnet runs are logged in DEVNET_SMOKE_TEST.md.
+- 15 unit tests and 25 integration test groups pass on a local validator. Live devnet runs are logged in DEVNET_SMOKE_TEST.md.
 - NOT independently audited. Before real money: audit, Squads multisig as admin and upgrade authority, low caps, legal check.
 
 ## PDAs
@@ -72,7 +72,8 @@ Admin or resolver:
 
 ## Deploy
 - Devnet: `./scripts/build.sh`, `solana program deploy target/deploy/mememarkets.so --program-id target/deploy/mememarkets-keypair.json -u devnet`, then `scripts/devnet-v2.ts setup`.
-- Mainnet: `scripts/mainnet.sh` walks through balance, deploy (verifies the binary before and after), init (fee vault, resolver key, paused), unpause, and refund. See DEPLOYED.md for live addresses.
+- Mainnet checklist: MAINNET_CHECKLIST.md.
+- Mainnet: `scripts/mainnet.sh` walks through balance, deploy (verifies the binary before and after), init (fee vault, resolver key, paused), unpause, and refund. See [$PRED token.md](%24PRED%20token.md) for live addresses.
 - Addresses: Circle USDC is `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` on mainnet and `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` on devnet.
 
 ## Rent and fees users should expect

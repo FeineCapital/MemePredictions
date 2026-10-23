@@ -213,6 +213,8 @@ Market `1RsA8a12Yfc5vDzfsUWZpSQ1Kdw4gPfSvGo3LBteUfk`. The admin wallet bought Ye
 
 # Version 3 live run (3 outcomes, open creation, creator fee, bonus, automatic payouts)
 
+Note: this run predates the seed change of 2026-10-19. Since then a creator's seed is split evenly across the outcomes with no shares, and the creator and admin cannot trade.
+
 Program `BGCcEd1X76oZ2yF9nRoun2gGGLJC3D59Z2XEJNJ6KmhZ`, production build md5 `784f86c4096d25a7a707a7c4b11ab455`.
 
 - Market A `5X4TUVQ8v45KGT1fQmKsux4v9wTdhCkfWpoNegZjzLTL`: created by the admin with 3 outcomes, so it opened instantly and Verified (open verified=true creatorShare=0). 5 USDC on each outcome plus a 3 USDC bonus from a treasury wallet. The resolver locked it and resolved outcome 3 early. Automatic payouts: outcome 3 holder 17.820000 USDC, the others 0. Platform fee 0.180000, vault left 0.000000.
