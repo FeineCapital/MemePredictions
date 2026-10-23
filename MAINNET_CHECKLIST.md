@@ -19,6 +19,7 @@ Status: public beta on devnet. Mainnet launches after the beta.
 6. Test one small market end to end with a non-admin wallet.
 7. Open trading: `RPC_URL=... scripts/mainnet.sh unpause`
 8. Send Phantom the mainnet program ID and a transaction link (domain review).
+9. Verified build: deploy from a reproducible `solana-verify build`, then submit it so Solscan shows the program as verified against this repository.
 
 ## After launch
 - [ ] Watch every market for the first weeks
