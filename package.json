@@ -1,7 +1,7 @@
 {
   "name": "mememarkets",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "build": "./scripts/build.sh",
     "build:test": "./scripts/build.sh test"

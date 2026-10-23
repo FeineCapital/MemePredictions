@@ -1,4 +1,15 @@
-# MemeMarkets program
+# MemePredictions
+
+**Prediction markets for Solana memecoins.** Bet on where a memecoin is going without buying it, cash out any time before the market locks, and get paid automatically when it resolves.
+
+[![tests](https://github.com/FeineCapital/MemePredictions/actions/workflows/tests.yml/badge.svg)](https://github.com/FeineCapital/MemePredictions/actions/workflows/tests.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+![network: Solana](https://img.shields.io/badge/network-Solana-9945FF.svg)
+![status: devnet beta](https://img.shields.io/badge/status-devnet%20beta-orange.svg)
+
+[Website](https://memepredictions.fun) · [X](https://x.com/MemePredictfun) · [$PRED token](%24PRED%20token.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md)
+
+## The program
 
 Anchor program (Solana) for prediction markets on memecoins with 2 or 3 outcomes, traded as shares with cash out. All money is USDC. Each market has its own vault PDA that only the program can move. No person or private key can take the money.
 
