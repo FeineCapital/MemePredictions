@@ -9,7 +9,7 @@ Status: public beta on devnet. Mainnet launches after the beta.
 - [ ] Legal check on where the platform can operate
 
 ## Launch
-1. Send 4 SOL to the launch wallet `7TPuntBHLRAyjBNKvMx24aKcXL9aGT2uaacUPJSWEMeF` (about 3.2 SOL becomes the program's refundable storage deposit).
+1. Make sure the launch wallet `7TPuntBHLRAyjBNKvMx24aKcXL9aGT2uaacUPJSWEMeF` holds at least 3 SOL (about 2.73 SOL becomes the program's refundable storage deposit).
 2. Deploy, verifying the binary before and after and publishing the IDL:
    `RPC_URL="https://mainnet.helius-rpc.com/?api-key=$(cat ~/.config/solana/mememarkets-mainnet/helius-key)" scripts/mainnet.sh deploy`
 3. Initialize (Circle USDC, 1% fee, 5 USDC min, max bet, 5 minute payout window, new mainnet resolver key, starts paused):

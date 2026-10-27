@@ -2,6 +2,7 @@
 
 ## v3.1 (2026-10-27) Current
 - Markets can now run up to 2 years (was 90 days), for long-range predictions.
+- Smaller program binary (537 KB, was 628 KB) with the same features, built for size. All tests pass.
 - Devnet upgraded in place. Existing markets and positions are unchanged.
 
 ## v3 (2026-10-19)

@@ -15,7 +15,7 @@ PROGRAM_KEYPAIR="target/deploy/mememarkets-keypair.json"
 PROGRAM_ID="BGCcEd1X76oZ2yF9nRoun2gGGLJC3D59Z2XEJNJ6KmhZ"
 SO="target/deploy/mememarkets.so"
 # md5 of the production build that passed all tests and runs on devnet. Not the short-time test build.
-EXPECTED_MD5="a061ec2e4188b0cce4bb255a956e2642"
+EXPECTED_MD5="ec2613eb75ae0bec6e1c076714d55893"
 
 DEPLOYER="$(solana-keygen pubkey "$KEY")"
 step="${1:-}"
@@ -40,12 +40,12 @@ case "$step" in
     check_build
     bal="$(solana balance "$DEPLOYER" -u "$RPC" | awk '{print $1}')"
     echo "Deployer $DEPLOYER has $bal SOL"
-    awk -v b="$bal" 'BEGIN { exit !(b >= 3.5) }' || { echo "STOP: need at least 3.5 SOL, send 4 to be safe."; exit 1; }
+    awk -v b="$bal" 'BEGIN { exit !(b >= 3.0) }' || { echo "STOP: need at least 3.0 SOL in this wallet."; exit 1; }
     if solana program show "$PROGRAM_ID" -u "$RPC" >/dev/null 2>&1; then
       echo "STOP: the program already exists on mainnet. Nothing to do."; exit 1
     fi
     echo
-    echo "This deploys to MAINNET with real SOL. About 3.2 SOL becomes a refundable storage deposit."
+    echo "This deploys to MAINNET with real SOL. About 2.73 SOL becomes a refundable storage deposit."
     read -r -p "Type DEPLOY to continue: " ok
     [ "$ok" = "DEPLOY" ] || { echo "Cancelled."; exit 1; }
     solana program deploy "$SO" \

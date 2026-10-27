@@ -20,7 +20,7 @@ Version 3 (2 or 3 outcomes, creator fees, Verified badge, open creation switch, 
 | Resolver (price watcher) | `EskbinsytGLYYrbHgCnKvkZoQGEF5AzgiWzETxYk21Ss` |
 | On chain IDL | `6FoLJpHwRvzDAbeUZeK4UVV1sefnmT7MESaGACYC54oW` |
 
-Production build md5 `a061ec2e4188b0cce4bb255a956e2642`, verified byte for byte against the program account.
+Production build md5 `ec2613eb75ae0bec6e1c076714d55893`, verified byte for byte against the program account.
 
 ## Solscan (devnet)
 - Program: https://solscan.io/account/BGCcEd1X76oZ2yF9nRoun2gGGLJC3D59Z2XEJNJ6KmhZ?cluster=devnet
