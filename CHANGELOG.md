@@ -1,6 +1,10 @@
 # Changelog
 
-## v3 (2026-10-19) Current
+## v3.1 (2026-10-27) Current
+- Markets can now run up to 2 years (was 90 days), for long-range predictions.
+- Devnet upgraded in place. Existing markets and positions are unchanged.
+
+## v3 (2026-10-19)
 - Markets with 2 or 3 outcomes. Winners split every other outcome's money.
 - The creator's seed is split evenly across the outcomes and is not a bet, so markets start at even odds.
 - The market creator and the admin cannot trade.

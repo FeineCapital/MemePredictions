@@ -22,7 +22,7 @@ declare_id!("BGCcEd1X76oZ2yF9nRoun2gGGLJC3D59Z2XEJNJ6KmhZ");
 
 pub const BPS_DENOM: u128 = 10_000;
 pub const MAX_FEE_BPS: u16 = 500;
-pub const MAX_DURATION: i64 = 90 * 24 * 60 * 60; // 90 days
+pub const MAX_DURATION: i64 = 730 * 24 * 60 * 60; // 2 years
 /// Upper bound on the dispute window so an admin cannot lock claims for years.
 pub const MAX_DISPUTE_SECS: i64 = 7 * 24 * 60 * 60; // 7 days
 
@@ -1323,7 +1323,7 @@ pub enum MmError {
     BadSide,
     #[msg("Amount is outside the allowed range")]
     BadAmount,
-    #[msg("Deadline must be 1 hour to 90 days away")]
+    #[msg("Deadline must be 1 hour to 2 years away")]
     BadDeadline,
     #[msg("Market is not in the right status")]
     BadStatus,

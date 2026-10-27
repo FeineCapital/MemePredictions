@@ -2627,7 +2627,7 @@
     {
       "code": 6006,
       "name": "BadDeadline",
-      "msg": "Deadline must be 1 hour to 90 days away"
+      "msg": "Deadline must be 1 hour to 2 years away"
     },
     {
       "code": 6007,

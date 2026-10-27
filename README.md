@@ -60,7 +60,7 @@ Admin or resolver:
 ## Rules enforced on chain
 - Fee, dispute window and curve are copied into each market at creation. Later config changes apply to new markets only. Min buy and max per wallet (on cost basis) apply to new trades.
 - One side per wallet per market at a time. Sell everything to switch.
-- `fee_bps` max 500, `dispute_secs` max 7 days, deadline 1 hour to 90 days, USDC mint must have 6 decimals.
+- `fee_bps` max 500, `dispute_secs` max 7 days, deadline 1 hour to 2 years, USDC mint must have 6 decimals.
 
 ## Trust model
 - The admin key decides outcomes, and the resolver key (for the price watcher server) can only lock, unlock and resolve. Neither can withdraw from a vault. A bad or hacked key could resolve a market wrongly; the dispute window and a Squads multisig admin are the mitigations.

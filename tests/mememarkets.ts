@@ -418,6 +418,11 @@ describe("mememarkets v3", () => {
     await expectErr(createMarket(creator, 10 * U, 10, 4), "BadParams");
     await expectErr(createMarket(creator, 10 * U, 10, 1), "BadParams");
     await expectErr(createMarket(creator, 10 * U, 1), "BadDeadline");
+    const DAY = 24 * 60 * 60;
+    await expectErr(createMarket(creator, 10 * U, 731 * DAY), "BadDeadline"); // max is 2 years
+    const long = await createMarket(creator, 10 * U, 729 * DAY); // just under 2 years is allowed
+    await closeCreation("cancelPending", long.market, creator, creator);
+    withdrawn += 10n * BU;
     const { market } = await createMarket(creator, 10 * U, 60, 2, "Will $X hit $1M by Friday?");
     const m = await program.account.market.fetch(market);
     expect(Buffer.from(m.rulesHash).equals(Buffer.from(rulesHash("Will $X hit $1M by Friday?")))).to.eq(true);
